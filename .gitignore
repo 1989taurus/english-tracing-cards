@@ -1,0 +1,15 @@
+# Generated worksheet output (regenerate via the tracing-cards skill)
+/tracing-cards-*.html
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python build artifacts (in case scripts are added later)
+__pycache__/
+*.pyc
+*.pyo

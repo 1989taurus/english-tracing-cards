@@ -1,0 +1,64 @@
+{
+  "skill_name": "tracing-cards",
+  "evals": [
+    {
+      "id": 0,
+      "name": "basic-animals-theme",
+      "prompt": "给我家幼儿园大班的孩子做一份小动物英语描红卡，6个单词：cat dog pig cow duck fish，主题叫做小动物单词练习。自动补全音标和中文。保存到当前目录。",
+      "expected_output": "Self-contained HTML file at ./tracing-cards-*.html. Should contain exactly 6 <div class=\"card\"> elements (one per word) and 2 <section class=\"page\"> elements (ceil(6/4)=2). Page header renders '英语描红卡 · 小动物单词练习'. Each card shows emoji + word + IPA + 中文. Each word has 2 ROW_TRACE rows with Hershey <use> references and 2 blank grid rows. Pure offline — no external CSS/JS/font/image URLs.",
+      "assertions": [
+        {"text": "Generated HTML file exists at the chosen output path"},
+        {"text": "File contains exactly 6 occurrences of '<div class=\"card\">'"},
+        {"text": "File contains exactly 2 occurrences of '<section class=\"page\">'"},
+        {"text": "File contains the theme name '小动物单词练习' in a page header"},
+        {"text": "File contains no external URLs (no 'https://', no 'fonts.googleapis')"},
+        {"text": "File contains <use href=\"#l-c\"> style Hershey references, not Comic Sans <text> elements"},
+        {"text": "Assistant runs the interview flow via AskUserQuestion before generating (word list already provided so that one question is skipped)"}
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "hard-letter-coverage",
+      "prompt": "做一份英语描红卡，测试字母组合：apple, book, green, yellow, banana, flower. 主题：混合练习. 自动补全meaning和phonetic, 默认路径.",
+      "expected_output": "HTML with 6 cards, 2 pages (ceil(6/4)=2). All words lowercase. Cumulative x offsets must be correct: apple uses half-advances 10+9+9+4+9; book uses 9+10+10+8; green uses 10+6+9+9+10; yellow uses 8+9+4+4+10+11; banana uses 9+10+9+10+9+10; flower uses 7+4+10+11+9+6. No letter should overflow right edge of the viewBox (<= 1000 advance units total).",
+      "assertions": [
+        {"text": "File contains exactly 6 occurrences of '<div class=\"card\">'"},
+        {"text": "File contains exactly 2 occurrences of '<section class=\"page\">'"},
+        {"text": "File contains '混合练习' in page header"},
+        {"text": "File contains <use href=\"#l-a\"> and <use href=\"#l-p\"> (apple stress)"},
+        {"text": "File contains <use href=\"#l-w\"> (widest letter, yellow/flower)"},
+        {"text": "For each word, the final x offset is less than 1000 - 40 (fits viewBox with right padding)"},
+        {"text": "No x offset is ever 20 or larger than expected — left padding is applied by translate(20,...) not by adding 20 per letter"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "unknown-word-asks-user",
+      "prompt": "帮我做英文描红，单词有：rainbow，unicorn，dinosaur。主题：奇幻冒险。音标和中文自动补全。",
+      "expected_output": "All three words are outside the built-in lexicon, so the assistant should stop and ask the user for emoji/phonetic/meaning rather than fabricate. If the user refuses or doesn't reply, the skill should not hallucinate phonetics/meanings.",
+      "assertions": [
+        {"text": "Assistant does NOT produce a final HTML file with fabricated phonetic/meaning for rainbow/unicorn/dinosaur"},
+        {"text": "Assistant explicitly asks the user (via AskUserQuestion or a direct question) for the missing lexicon entries"},
+        {"text": "Assistant names the specific words that are missing from the built-in lexicon"},
+        {"text": "Assistant does not invent an IPA phonetic such as a made-up /reɪnˌboʊ/ without user confirmation"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "uppercase-auto-lowercase",
+      "prompt": "Make me a tracing worksheet for these words: CAT, DOG, APPLE, BOOK. Theme: 'Phonics Practice'. Save in current directory.",
+      "expected_output": "Assistant should silently lowercase all words (Hershey defs only cover a-z) and mention that uppercase is not supported by the current font before proceeding with cat/dog/apple/book.",
+      "assertions": [
+        {"text": "File contains <use href=\"#l-c\"> (lowercase c from CAT)"},
+        {"text": "File does NOT reference any uppercase paths like #l-C or #l-A"},
+        {"text": "Assistant mentions in the reply that uppercase A-Z is not available in the current font and input was lowercased"},
+        {"text": "File contains exactly 4 occurrences of '<div class=\"card\">'"},
+        {"text": "File contains exactly 1 occurrence of '<section class=\"page\">' (ceil(4/4)=1)"}
+      ],
+      "files": []
+    }
+  ]
+}

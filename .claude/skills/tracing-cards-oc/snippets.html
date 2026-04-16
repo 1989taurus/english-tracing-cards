@@ -1,0 +1,67 @@
+<!--
+  Snippets reused by SKILL.md when assembling the final HTML.
+  DO NOT open standalone — these are fragments.
+-->
+
+<!-- ============================================================ -->
+<!-- SNIPPET: PAGE_WRAPPER                                        -->
+<!-- One per A4 page. Place cards inside.                         -->
+<!-- Variables: {{PAGE_NUM}} {{PAGE_TOTAL}} {{CARDS}}             -->
+<!-- ============================================================ -->
+<section class="page">
+  <header class="page-header">
+    <span class="title">English Tracing · 英语描红卡</span>
+    <span class="meta">Page {{PAGE_NUM}} / {{PAGE_TOTAL}}</span>
+  </header>
+  {{CARDS}}
+  <p class="footer-tip">先看、再描、最后自己写一遍 · Look → Trace → Write</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- SNIPPET: CARD                                                -->
+<!-- One per word. 4 rows: 2 dashed trace + 2 blank practice.     -->
+<!-- Variables: {{EMOJI}} {{WORD}} {{PHONETIC}} {{MEANING}}       -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-info">
+    <div class="emoji">{{EMOJI}}</div>
+    <div class="word-label">{{WORD}}</div>
+    <div class="phonetic">{{PHONETIC}}</div>
+    <div class="meaning">{{MEANING}}</div>
+  </div>
+  <div class="card-rows">
+    <div class="row">{{ROW_TRACE}}</div>
+    <div class="row">{{ROW_TRACE}}</div>
+    <div class="row">{{ROW_BLANK}}</div>
+    <div class="row">{{ROW_BLANK}}</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SNIPPET: ROW_TRACE                                           -->
+<!-- Four-line grid WITH dashed tracing letters.                  -->
+<!-- Variable: {{WORD}}                                           -->
+<!-- ============================================================ -->
+<svg viewBox="0 0 1000 120" preserveAspectRatio="xMinYMid meet">
+  <line x1="0" y1="0"   x2="1000" y2="0"   stroke="#e8505b" stroke-width="1.4"/>
+  <line x1="0" y1="40"  x2="1000" y2="40"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="0" y1="80"  x2="1000" y2="80"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="0" y1="120" x2="1000" y2="120" stroke="#e8505b" stroke-width="1.4"/>
+  <text x="24" y="80"
+        font-family="'Comic Sans MS','Chalkboard SE','Kristen ITC','Patrick Hand',cursive"
+        font-size="80" font-weight="bold"
+        fill="#dbe9f5" stroke="#5a9ed0" stroke-width="1.2"
+        stroke-dasharray="4,3"
+        letter-spacing="6">{{WORD}}</text>
+</svg>
+
+<!-- ============================================================ -->
+<!-- SNIPPET: ROW_BLANK                                           -->
+<!-- Four-line grid only. Child writes freely.                    -->
+<!-- ============================================================ -->
+<svg viewBox="0 0 1000 120" preserveAspectRatio="xMinYMid meet">
+  <line x1="0" y1="0"   x2="1000" y2="0"   stroke="#e8505b" stroke-width="1.4"/>
+  <line x1="0" y1="40"  x2="1000" y2="40"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="0" y1="80"  x2="1000" y2="80"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="0" y1="120" x2="1000" y2="120" stroke="#e8505b" stroke-width="1.4"/>
+</svg>

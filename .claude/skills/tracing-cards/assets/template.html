@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>{{TITLE}}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Comic Sans MS", "Chalkboard SE", "Kristen ITC", "Patrick Hand", "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #222;
+    background: #f6f1e7;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm;
+    height: 297mm;
+    padding: 10mm 12mm;
+    background: #fffdf6;
+    page-break-after: always;
+    page-break-inside: avoid;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; }
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 3mm;
+    margin-bottom: 4mm;
+    border-bottom: 2px dashed #e0a96d;
+    flex: 0 0 auto;
+  }
+  .page-header .title {
+    font-size: 16pt;
+    color: #b8641c;
+    font-weight: bold;
+  }
+  .page-header .meta {
+    font-size: 10pt;
+    color: #a67950;
+  }
+  .cards-area {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 4mm;
+    min-height: 0;
+  }
+  .card {
+    display: flex;
+    gap: 5mm;
+    padding: 3mm;
+    border: 2px dashed #f0c090;
+    border-radius: 5mm;
+    background: #fff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .card-info {
+    flex: 0 0 40mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2mm;
+    border-right: 2px dashed #f0c090;
+  }
+  .card-info .emoji {
+    font-size: 34pt;
+    line-height: 1;
+    margin-bottom: 1.5mm;
+  }
+  .card-info .word-label {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #2d6a9f;
+  }
+  .card-info .phonetic {
+    font-size: 9.5pt;
+    color: #666;
+    font-family: "Lucida Sans Unicode", "DejaVu Sans", "Arial Unicode MS", sans-serif;
+    margin-top: 1mm;
+  }
+  .card-info .meaning {
+    font-size: 10.5pt;
+    color: #333;
+    margin-top: 1mm;
+  }
+  .card-rows {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5mm;
+    min-width: 0;
+  }
+  .row {
+    width: 100%;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .row svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+  .footer-tip {
+    text-align: center;
+    font-size: 9pt;
+    color: #a67950;
+    margin-top: 3mm;
+    flex: 0 0 auto;
+  }
+  @media screen {
+    body { padding: 20px; }
+    .page { margin: 0 auto 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  }
+  @media print {
+    html, body { width: 210mm; margin: 0; padding: 0; background: #fff; }
+    body { background: #fff; }
+    .page { box-shadow: none; margin: 0; }
+  }
+</style>
+<!-- Hershey Futural single-stroke font paths (global defs) -->
+<svg width="0" height="0" style="display: none;">
+  <defs>
+  <path id="l-a" d="M15,8 L15,22 M15,11 L13,9 11,8 8,8 6,9 4,11 3,14 3,16 4,19 6,21 8,22 11,22 13,21 15,19"/>
+  <path id="l-b" d="M4,1 L4,22 M4,11 L6,9 8,8 11,8 13,9 15,11 16,14 16,16 15,19 13,21 11,22 8,22 6,21 4,19"/>
+  <path id="l-c" d="M15,11 L13,9 11,8 8,8 6,9 4,11 3,14 3,16 4,19 6,21 8,22 11,22 13,21 15,19"/>
+  <path id="l-d" d="M15,1 L15,22 M15,11 L13,9 11,8 8,8 6,9 4,11 3,14 3,16 4,19 6,21 8,22 11,22 13,21 15,19"/>
+  <path id="l-e" d="M3,14 L15,14 15,12 14,10 13,9 11,8 8,8 6,9 4,11 3,14 3,16 4,19 6,21 8,22 11,22 13,21 15,19"/>
+  <path id="l-f" d="M10,1 L8,1 6,2 5,5 5,22 M2,8 L9,8"/>
+  <path id="l-g" d="M15,8 L15,24 14,27 13,28 11,29 8,29 6,28 M15,11 L13,9 11,8 8,8 6,9 4,11 3,14 3,16 4,19 6,21 8,22 11,22 13,21 15,19"/>
+  <path id="l-h" d="M4,1 L4,22 M4,12 L7,9 9,8 12,8 14,9 15,12 15,22"/>
+  <path id="l-i" d="M3,1 L4,2 5,1 4,0 3,1 M4,8 L4,22"/>
+  <path id="l-j" d="M5,1 L6,2 7,1 6,0 5,1 M6,8 L6,25 5,28 3,29 1,29"/>
+  <path id="l-k" d="M4,1 L4,22 M14,8 L4,18 M8,14 L15,22"/>
+  <path id="l-l" d="M4,1 L4,22"/>
+  <path id="l-m" d="M4,8 L4,22 M4,12 L7,9 9,8 12,8 14,9 15,12 15,22 M15,12 L18,9 20,8 23,8 25,9 26,12 26,22"/>
+  <path id="l-n" d="M4,8 L4,22 M4,12 L7,9 9,8 12,8 14,9 15,12 15,22"/>
+  <path id="l-o" d="M8,8 L6,9 4,11 3,14 3,16 4,19 6,21 8,22 11,22 13,21 15,19 16,16 16,14 15,11 13,9 11,8 8,8"/>
+  <path id="l-p" d="M4,8 L4,29 M4,11 L6,9 8,8 11,8 13,9 15,11 16,14 16,16 15,19 13,21 11,22 8,22 6,21 4,19"/>
+  <path id="l-q" d="M15,8 L15,29 M15,11 L13,9 11,8 8,8 6,9 4,11 3,14 3,16 4,19 6,21 8,22 11,22 13,21 15,19"/>
+  <path id="l-r" d="M4,8 L4,22 M4,14 L5,11 7,9 9,8 12,8"/>
+  <path id="l-s" d="M14,11 L13,9 10,8 7,8 4,9 3,11 4,13 6,14 11,15 13,16 14,18 14,19 13,21 10,22 7,22 4,21 3,19"/>
+  <path id="l-t" d="M5,1 L5,18 6,21 8,22 10,22 M2,8 L9,8"/>
+  <path id="l-u" d="M4,8 L4,18 5,21 7,22 10,22 12,21 15,18 M15,8 L15,22"/>
+  <path id="l-v" d="M2,8 L8,22 M14,8 L8,22"/>
+  <path id="l-w" d="M3,8 L7,22 M11,8 L7,22 M11,8 L15,22 M19,8 L15,22"/>
+  <path id="l-x" d="M3,8 L14,22 M14,8 L3,22"/>
+  <path id="l-y" d="M2,8 L8,22 M14,8 L8,22 6,26 4,28 2,29 1,29"/>
+  <path id="l-z" d="M14,8 L3,22 M3,8 L14,8 M3,22 L14,22"/>
+  </defs>
+</svg>
+</head>
+<body>
+{{PAGES}}
+</body>
+</html>
