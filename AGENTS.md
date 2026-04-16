@@ -1,38 +1,38 @@
 # AGENTS.md
 
-## What this repo is
+## 这个仓库是什么
 
-Single-purpose HTML generator for printable English tracing worksheets. No build system, no package manager, no tests.
+一个单一用途的 HTML 生成器，用来产出可打印的英语描红卡。没有构建系统、没有包管理器、没有测试。
 
-## Critical distinctions
+## 关键区分
 
-- **Root `*.html` files are generated output, not source.** Do not hand-edit them. Regenerate via the skill.
-- **No `npm`/`pip`/`cargo`/etc.** This is not a software project.
+- **根目录的 `*.html` 是生成产物，不是源码。** 不要手动改，要改请通过 skill 重新生成。
+- **没有 `npm`/`pip`/`cargo` 之类。** 这不是一个软件项目。
 
-## Workflow
+## 工作流
 
-When the user mentions 英语描红 / 描红卡 / 描红 / 英文练字帖 / tracing worksheet / handwriting practice / kindergarten English, load the tracing-cards skill and run the interview flow before generating.
+当用户提到 英语描红 / 描红卡 / 描红 / 英文练字帖 / tracing worksheet / handwriting practice / kindergarten English，加载 tracing-cards skill，先跑访谈流程再开始生成。
 
-## Generating tracing cards
+## 生成描红卡
 
-1. Run the interview (via the skill's `AskUserQuestion` flow) — word list, theme name, auto-fill, output path. Do not skip.
-2. Generate HTML by substituting snippets into `assets/template.html`. For the Hershey skill, compute per-letter x offsets from the half-advance table.
-3. Verify: count `<div class="card">` == word count, `<section class="page">` == ceil(words/4).
+1. 跑访谈（通过 skill 的 `AskUserQuestion` 流程）——单词列表、主题名称、是否自动补全、输出路径。不要跳过。
+2. 把片段替换到 `assets/template.html` 里生成 HTML。Hershey 版本需要按半宽表算每个字母的 x 偏移。
+3. 验证：`<div class="card">` 数量 == 单词数，`<section class="page">` 数量 == ceil(单词数/4)。
 
-## Invariants
+## 不变式
 
-- Lowercase tracing words only (max ~20 chars for Hershey, ~12 for OC)
-- Fully offline: inline SVG + Hershey paths + emoji, no external assets
-- SVG grid: viewBox `0 0 1000 120`, lines at y=0, 40, 80, 120
-- Hershey rendering: `<use href="#l-X">` with `translate(20,17.143) scale(2.857143)` transform
+- 描红词仅支持小写（Hershey 最多约 20 字符，OC 版最多约 12 字符）
+- 完全离线：内嵌 SVG + Hershey path + emoji，不引用任何外部资源
+- SVG 网格：viewBox `0 0 1000 120`，线在 y=0, 40, 80, 120
+- Hershey 渲染：`<use href="#l-X">` 加 `translate(20,17.143) scale(2.857143)` transform
 
 ## Skills
 
-| Skill | Approach | Status |
+| Skill | 实现方式 | 状态 |
 |---|---|---|
-| `.claude/skills/tracing-cards/` | Hershey Futural single-stroke SVG paths | Current / preferred |
-| `.claude/skills/tracing-cards-oc/` | Comic Sans outline with stroke-dasharray | Legacy alternative |
+| `.claude/skills/tracing-cards/` | Hershey Futural 单笔画 SVG path | 当前主推 |
+| `.claude/skills/tracing-cards-oc/` | Comic Sans 轮廓 + stroke-dasharray | 旧方案兜底 |
 
-## Reference
+## 参考
 
-Full spec and lexicon: `.claude/skills/tracing-cards/SKILL.md`
+完整规范和词库：`.claude/skills/tracing-cards/SKILL.md`

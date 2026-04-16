@@ -1,27 +1,29 @@
 # tracing-cards
 
-Claude Code skill that generates printable A4 English word tracing worksheets for kindergarten-age children (3–6 years old).
+一个 Claude Code skill，用来生成可打印 A4 英语单词描红卡，面向幼儿园年龄段（3–6 岁）的小朋友。
 
-**Version:** 1.0.0 · **License:** MIT · **Offline-only output**
+**版本：** 1.0.0 · **许可证：** MIT · **输出完全离线**
 
-## What you get
+> 本 skill 由 **Claude Opus 4.7** 在 Claude Code 中协作完成：规范起草、Hershey 字体布局、严格 A4 CSS、官方 `.skill` 格式打包。
 
-- Self-contained HTML file (no network, no build step), print-ready on A4.
-- Each card: emoji + word + IPA phonetic + 中文 meaning.
-- 4 rows per card on a 四线三格 (four-line three-space) grid:
-  - 2 tracing rows with Hershey Futural single-stroke letters (实线，非虚线描红)
-  - 2 blank practice rows
-- 4 cards per A4 page, strict `height: 297mm` so it prints on exactly one sheet.
-- Built-in lexicon of ~50 kindergarten words (animals, fruit, colors, numbers, family, etc.).
+## 你能拿到什么
 
-## Install
+- 自包含的 HTML 文件（无联网、无构建），可直接 A4 打印。
+- 每张卡片：emoji + 单词 + IPA 音标 + 中文释义。
+- 每张卡片 4 行，印在 四线三格 格子上：
+  - 2 行 Hershey Futural 单笔画字母描红（实线，非虚线）
+  - 2 行空白练习
+- 每页 4 张卡片，严格 `height: 297mm`，正好打印 1 张 A4 纸。
+- 内置约 50 个幼儿园常用词（动物、水果、颜色、数字、家庭等）。
 
-Drop the whole `tracing-cards/` directory into one of:
+## 安装
 
-- Per-project: `<your-project>/.claude/skills/tracing-cards/`
-- Per-user: `~/.claude/skills/tracing-cards/`
+把整个 `tracing-cards/` 目录放到以下任意一个位置：
 
-Final layout:
+- 项目级：`<你的项目>/.claude/skills/tracing-cards/`
+- 用户级：`~/.claude/skills/tracing-cards/`
+
+最终目录结构：
 
 ```
 tracing-cards/
@@ -37,34 +39,34 @@ tracing-cards/
     └── evals.json
 ```
 
-No package manager, no build. Claude Code picks it up on the next session.
+无需 npm / pip，无需构建。Claude Code 下次启动会自动识别。
 
-## Use
+## 使用
 
-Start a Claude Code session and say one of:
+打开 Claude Code，对它说以下任意一句：
 
-- 给孩子做一份英文描红卡，单词：cat dog pig…
-- 帮我生成英语字帖，主题"小动物"，单词 cat dog cow
-- Make a tracing worksheet for apple, book, pen
+- `给孩子做一份英文描红卡，单词：cat dog pig …`
+- `帮我生成英语字帖，主题"小动物"，单词 cat dog cow`
+- `Make a tracing worksheet for apple, book, pen`
 
-Claude will interview you for: word list, theme name, auto-fill yes/no, output path. Then it writes `tracing-cards-<slug>.html` to your chosen directory. Open in a browser, `Ctrl/Cmd+P`, select A4, tick **"背景图形 / Background graphics"** so the four-line grid prints, and you're done.
+Claude 会问你：**单词列表 / 主题名称 / 是否自动补全音标释义 / 输出路径**，然后把 `tracing-cards-<主题>.html` 写到你指定的目录。浏览器打开 → `Ctrl/Cmd+P` → 选 A4 → 勾选 **"背景图形 / Background graphics"** 让四线格颜色印出来 → 打印完成。
 
-## Requirements
+## 运行要求
 
-- Claude Code (any recent version).
-- A browser that can print to A4 (Chrome/Edge/Safari/Firefox all work).
-- No internet required to open or print the generated HTML.
+- Claude Code（任意近期版本）。
+- 能打印到 A4 的浏览器（Chrome / Edge / Safari / Firefox 都可以）。
+- 打开或打印生成的 HTML 不需要联网。
 
-## Constraints
+## 约束
 
-- Lowercase a–z only. Uppercase input is silently lowercased (Hershey defs don't cover A–Z).
-- Max ~20 characters per word (advance widths must fit the 1000-unit viewBox).
-- If a word isn't in the built-in lexicon, the skill **asks** for emoji/phonetic/meaning rather than fabricate one — wrong IPA actively mis-teaches a young learner.
+- 仅支持小写 a–z。大写输入会静默转小写（Hershey defs 不包含 A–Z）。
+- 单词最多约 20 字符（字宽累加必须装进 1000 单位的 viewBox）。
+- 如果单词不在内置词库里，skill 会**停下来问你** emoji / 音标 / 释义，而不是瞎编——错误的 IPA 会误导学龄前小朋友。
 
-## Testing
+## 测试
 
-Regression prompts live in `evals/evals.json` — 4 cases covering basic themes, letter coverage, unknown-word handling, and uppercase normalization.
+回归用例放在 `evals/evals.json`，4 个测试覆盖：基本主题生成、难字母组合、未知单词处理、大写输入归一化。
 
-## Changelog
+## 更新日志
 
-See [CHANGELOG.md](CHANGELOG.md).
+见 [CHANGELOG.md](CHANGELOG.md)。

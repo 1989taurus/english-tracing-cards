@@ -1,56 +1,56 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+这份文件用来指导 Claude Code（claude.ai/code）在本仓库里该怎么干活。
 
-## Repository Purpose
+## 仓库用途
 
-This repo produces **printable English word tracing worksheets** for kindergarten-age children (ages 3-6). No build system, no package manager, no tests. The only artifact is a self-contained HTML file opened in a browser and printed on A4 paper.
+这个仓库用来生成**可打印的 A4 英语单词描红练习卡**，面向 3–6 岁幼儿园年龄段的小朋友。没有构建系统、没有包管理器、没有测试。唯一的产物是一份自包含的 HTML 文件，用浏览器打开后打到 A4 纸上。
 
-## Architecture
+## 架构
 
-Two local skills live under `.claude/skills/`. The current `tracing-cards/` follows the `/skill-creator` layout — `SKILL.md` (authoritative spec with interview flow, lexicon, generation steps) plus `assets/` (`template.html` outer HTML shell with `{{PAGES}}`, `snippets.html` reusable fragments), `references/` (`example.html` reference output), and `evals/` (test prompts for skill iteration). The legacy `tracing-cards-oc/` still uses the older flat layout.
+`.claude/skills/` 下有两套本地 skill。当前主推的是 `tracing-cards/`，遵循 `/skill-creator` 的标准布局——`SKILL.md`（权威规范：访谈流程、词库、生成步骤）加上 `assets/`（`template.html` HTML 外壳含 `{{PAGES}}` 占位符，`snippets.html` 可复用片段）、`references/`（`example.html` 参考输出）、`evals/`（skill 迭代用的测试 prompt）。旧的 `tracing-cards-oc/` 仍是扁平布局。
 
-### `tracing-cards/` — current, preferred
+### `tracing-cards/` — 主推方案
 
-Uses **Hershey Futural single-stroke font** embedded as SVG `<path>` elements in global `<defs>`, rendered via `<use href="#l-X">` with cumulative x offsets computed from per-letter half-advance values. Produces clean single-stroke outlines ideal for tracing.
+用 **Hershey Futural 单笔画字体**，以 SVG `<path>` 嵌在全局 `<defs>` 里，通过 `<use href="#l-X">` 引用，x 偏移量按每个字母的半宽累加得出。线条干净、单笔画，最适合描红。
 
-### `tracing-cards-oc/` — legacy alternative
+### `tracing-cards-oc/` — 旧方案兜底
 
-Uses Comic Sans MS `<text>` elements with `stroke-dasharray="4,3"` for dashed outlines. Simpler generation (no offset math) but depends on system font availability and renders less cleanly for tracing.
+用 Comic Sans MS 的 `<text>` 元素加 `stroke-dasharray="4,3"` 画虚线轮廓。生成逻辑简单（不用算偏移），但依赖系统字体，打印效果不稳定。
 
-### Shared structure
+### 共用结构
 
-Both skills follow the same snippets: `PAGE_WRAPPER` → `CARD` (×4 per page) → 2 `ROW_TRACE` + 2 `ROW_BLANK`. Both share the same interview flow, lexicon (~50 kindergarten words), and verification steps.
+两套 skill 的片段一致：`PAGE_WRAPPER` → `CARD`（每页 ×4）→ 2 × `ROW_TRACE` + 2 × `ROW_BLANK`。访谈流程、约 50 词的词库、验证步骤也一致。
 
-### Generated output
+### 生成产物
 
-Root-level `tracing-cards-*.html` files are **generated output, not source**. Naming: `tracing-cards-<theme-slug>.html`. Files ending in `*-test.html` are iteration/debugging artifacts. Regenerate via the skill rather than hand-editing.
+根目录的 `tracing-cards-*.html` 是**生成产物，不是源码**。命名约定：`tracing-cards-<主题 slug>.html`。以 `*-test.html` 结尾的是调试用迭代文件。要改内容请重新跑 skill，不要手动改。
 
-## Generation Pipeline
+## 生成流水线
 
-1. **Interview** the user via `AskUserQuestion` — word list, theme name, auto-fill yes/no, output path. Do not skip.
-2. For each word: resolve emoji/phonetic/meaning from the lexicon (or ask user if unknown — never guess), lowercase the word, substitute into CARD snippet.
-3. For `tracing-cards/` (Hershey): compute per-letter x offsets from the half-advance table in SKILL.md, build SVG with `<use>` elements inside a scaled `<g>` transform.
-4. Group cards **4 per page** into PAGE_WRAPPER sections (fill `{{THEME}}` with user's theme name), inject into `assets/template.html` at `{{PAGES}}`.
-5. **Verify**: read back first 30 lines, count `<div class="card">` == word count, count `<section class="page">` == ceil(words/4), report counts.
+1. **访谈用户** — 用 `AskUserQuestion` 问四件事：单词列表、主题名称、是否自动补全、输出路径。不要跳过。
+2. 对每个单词：从词库或用户输入里取 emoji/音标/释义（词库没有就问用户，绝不瞎猜），单词转小写，填到 CARD 片段里。
+3. 对 `tracing-cards/`（Hershey）：按 SKILL.md 里的半宽表算出每个字母的 x 偏移，用 `<use>` 元素加缩放 `<g>` transform 组装 SVG。
+4. 每 4 张卡片组成一个 PAGE_WRAPPER（`{{THEME}}` 填用户指定的主题名），塞进 `assets/template.html` 的 `{{PAGES}}` 位置。
+5. **验证**：读回前 30 行、数 `<div class="card">` 等于单词数、数 `<section class="page">` 等于 ceil(单词数/4)、把计数报告给用户。
 
-## Hard Invariants (do not change without reason)
+## 硬性约束（无必要不要动）
 
-**SVG grid** (both skills):
-- viewBox `0 0 1000 120`, grid lines at **y=0, 40, 80, 120** (四线三格).
+**SVG 网格**（两套 skill 共通）：
+- viewBox `0 0 1000 120`，四线三格的线在 **y=0, 40, 80, 120**。
 
-**Hershey rendering** (`tracing-cards/` only):
-- `<path>` defs in `assets/template.html` for a–z, rendered via `<use href="#l-X">`.
-- Transform: `translate(20, 17.143) scale(2.857143)` — scale = 40/14, TY = 80 − 2.857×22.
-- Stroke: `fill="none" stroke="#5a9ed0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"`.
-- Max ~20 characters per word (advance widths must fit viewBox 1000).
+**Hershey 渲染**（只针对 `tracing-cards/`）：
+- a–z 的 `<path>` defs 在 `assets/template.html` 里，靠 `<use href="#l-X">` 引用。
+- Transform：`translate(20, 17.143) scale(2.857143)`——scale = 40/14，TY = 80 − 2.857×22。
+- 描边：`fill="none" stroke="#5a9ed0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"`。
+- 单词长度上限约 20 字符（累加字宽必须装进 viewBox 1000）。
 
-**General**:
-- **Lowercase only** — Hershey defs cover a-z only. Uppercase (A-Z) is not supported; reject gracefully.
-- **Fully offline**: inline SVG + emoji + system fonts. No Google Fonts, no external CSS, no network assets.
-- Strip punctuation, reject non-ASCII in tracing words (中文/emoji fine in meaning/emoji fields).
-- Do not auto-open the file in a browser — user may be headless.
+**通用**：
+- **仅支持小写** — Hershey defs 不覆盖 A–Z。大写输入静默转小写。
+- **完全离线**：SVG + emoji + 系统字体，全部内嵌。没有 Google Fonts、没有外链 CSS、没有网络资源。
+- 描红词要清洗标点、拒绝非 ASCII（中文/emoji 在 meaning/emoji 字段里没问题）。
+- **不要**自动在浏览器里打开文件——用户可能在无头环境下工作。
 
-## Activation
+## 触发
 
-Triggers on: 英语描红 / 描红卡 / 英文练字帖 / 单词描红 / tracing worksheet / handwriting practice / kindergarten English. Always run the interview flow before generating.
+命中以下任意一条就启动 skill：英语描红 / 描红卡 / 英文练字帖 / 单词描红 / tracing worksheet / handwriting practice / kindergarten English。启动后一定要先跑访谈流程，再开始生成。

@@ -1,116 +1,119 @@
 # english-tracing-cards
 
-A Claude Code skill that generates **printable A4 English word tracing worksheets** for kindergarten-age children (3–6 years old).
+一个 Claude Code skill，用来生成**可打印 A4 英语单词描红练习卡**，面向幼儿园年龄段（3–6 岁）的小朋友。
 
-Each worksheet is a self-contained, fully offline HTML file with:
-- 4 cards per A4 page (strict `height: 297mm`, prints on exactly one sheet)
-- Each card: emoji + word + IPA phonetic + 中文 meaning
-- 2 tracing rows (Hershey Futural single-stroke SVG letters — 实线，非虚线描红)
-- 2 blank practice rows on a 四线三格 (four-line three-space) grid
-- Built-in lexicon of ~50 kindergarten-level words
+每张作业都是一个自包含、完全离线的 HTML 文件，特性如下：
+
+- 每页 4 张卡片，严格 `height: 297mm`，正好打印到一张 A4 纸
+- 每张卡片：emoji + 单词 + 音标 + 中文释义
+- 2 行描红（Hershey Futural 单笔画 SVG 字母，实线描红，非虚线）
+- 2 行空白练习，印在 四线三格 格子上
+- 内置约 50 个幼儿园常用词（动物、水果、颜色、数字、家庭等）
 
 ![layout](https://img.shields.io/badge/layout-A4%20297mm-blue) ![skill](https://img.shields.io/badge/claude--code-skill-7c3aed) ![license](https://img.shields.io/badge/license-MIT-green)
 
-## Sample output
+> 本仓库由 **Claude Opus 4.7** 在 Claude Code 中协作完成，包括 skill 规范设计、Hershey 字体布局、严格 A4 CSS、官方 `.skill` 格式打包、以及本文档本身。
 
-Run the skill, open the generated HTML in any browser, `Ctrl/Cmd+P` → select A4 → tick **"背景图形 / Background graphics"** to keep the four-line grid colors → print.
+## 效果预览
 
-Preview layout: see [`.claude/skills/tracing-cards/references/example.html`](.claude/skills/tracing-cards/references/example.html) (4-card reference).
+执行 skill 后，浏览器打开生成的 HTML → `Ctrl/Cmd+P` → 选 A4 → 勾选 **"背景图形 / Background graphics"** 让四线格颜色能打出来 → 打印即可。
 
-## Install the skill
+样例版式见 [`.claude/skills/tracing-cards/references/example.html`](.claude/skills/tracing-cards/references/example.html)（4 卡参考页）。
 
-### Option 1 — one-shot from the pre-built `.skill` bundle
+## 安装 skill
+
+### 方式一 · 直接解压打包好的 `.skill`
 
 ```bash
 unzip dist/tracing-cards.skill -d ~/.claude/skills/
 ```
 
-### Option 2 — copy the source tree directly
+### 方式二 · 直接拷贝源目录
 
 ```bash
 cp -r .claude/skills/tracing-cards ~/.claude/skills/
 ```
 
-Or drop it per-project at `<your-project>/.claude/skills/tracing-cards/`.
+或者放到项目级目录：`<你的项目>/.claude/skills/tracing-cards/`。
 
-No package manager, no build step. Claude Code discovers it on the next session.
+无需 npm / pip，无需构建。Claude Code 下次启动会自动识别。
 
-## Use it
+## 怎么用
 
-Start a Claude Code session and say one of:
+打开 Claude Code，对它说任意一种触发语：
 
 - `给孩子做一份英文描红卡，单词：cat dog pig …`
 - `帮我生成英语字帖，主题"小动物"，单词 cat dog cow`
 - `Make a tracing worksheet for apple, book, pen`
 
-Claude will interview you briefly (word list, theme name, auto-fill yes/no, output path) and then write `tracing-cards-<slug>.html` to the directory you chose.
+Claude 会简短地问你四件事：**单词列表 / 主题名称 / 是否自动补全音标和释义 / 输出路径**，然后把 `tracing-cards-<主题>.html` 写到你选的目录。
 
-Full spec and trigger keywords: [`.claude/skills/tracing-cards/SKILL.md`](.claude/skills/tracing-cards/SKILL.md).
+完整规范 + 全部触发关键词见 [`.claude/skills/tracing-cards/SKILL.md`](.claude/skills/tracing-cards/SKILL.md)。
 
-## Repository layout
+## 仓库目录
 
 ```
 .
 ├── .claude/
 │   └── skills/
-│       ├── tracing-cards/            # current, preferred — Hershey single-stroke SVG
-│       │   ├── SKILL.md              # authoritative spec (interview, lexicon, rules)
-│       │   ├── README.md             # skill-level usage
+│       ├── tracing-cards/            # 当前主推方案 — Hershey 单笔画 SVG
+│       │   ├── SKILL.md              # 权威规范（访谈流程、词库、规则）
+│       │   ├── README.md             # skill 内部说明
 │       │   ├── CHANGELOG.md
 │       │   ├── LICENSE               # MIT
 │       │   ├── assets/
-│       │   │   ├── template.html     # A4 shell + Hershey a–z <defs>
-│       │   │   └── snippets.html     # page / card / row fragments
+│       │   │   ├── template.html     # A4 外壳 + Hershey a–z <defs>
+│       │   │   └── snippets.html     # 页 / 卡 / 行 片段
 │       │   ├── references/
-│       │   │   └── example.html      # 4-card reference output
+│       │   │   └── example.html      # 4 卡参考输出
 │       │   └── evals/
-│       │       └── evals.json        # regression test prompts
-│       └── tracing-cards-oc/         # legacy alternative — Comic Sans dashed outline
+│       │       └── evals.json        # 回归测试用例
+│       └── tracing-cards-oc/         # 旧方案 — Comic Sans 虚线轮廓
 ├── dist/
-│   └── tracing-cards.skill           # packaged release (unzip into ~/.claude/skills/)
-├── AGENTS.md                         # workflow for Claude Code agents in this repo
-├── CLAUDE.md                         # project instructions loaded into every session
-└── README.md                         # you are here
+│   └── tracing-cards.skill           # 官方格式打包产物（解压到 ~/.claude/skills/）
+├── AGENTS.md                         # 本仓库内 Claude Code agent 的工作流
+├── CLAUDE.md                         # 每次会话自动载入的项目指令
+└── README.md                         # 就是你正在看的这份
 ```
 
-## Two skills, one repo
+## 两套 skill 的差异
 
-| Skill | Approach | Status |
+| Skill | 渲染方式 | 状态 |
 |---|---|---|
-| [`tracing-cards/`](.claude/skills/tracing-cards/) | Hershey Futural single-stroke SVG paths | **current / preferred** |
-| [`tracing-cards-oc/`](.claude/skills/tracing-cards-oc/) | Comic Sans `<text>` with `stroke-dasharray` | legacy alternative |
+| [`tracing-cards/`](.claude/skills/tracing-cards/) | Hershey Futural 单笔画 SVG path | **主推 / 推荐** |
+| [`tracing-cards-oc/`](.claude/skills/tracing-cards-oc/) | Comic Sans `<text>` + `stroke-dasharray` | 旧方案 / 兜底 |
 
-The Hershey version produces cleaner single-stroke outlines ideal for tracing; the OC version is simpler but depends on system fonts and renders less consistently.
+Hershey 版线条干净、单笔画，最适合描红；OC 版实现更简单但依赖系统字体，打印效果不稳定。
 
-## Hard invariants
+## 硬性约束（不要随便改）
 
-- **Lowercase a–z only** — Hershey defs don't cover A–Z. Uppercase input is silently lowercased.
-- **Max ~20 characters per word** — advance widths must fit the 1000-unit SVG viewBox.
-- **Fully offline** — no Google Fonts, no external CSS/JS/images. Generated HTML opens and prints without network.
-- **Strict A4** — `@page { size: A4; margin: 0 }` + `.page { height: 297mm; overflow: hidden }` with flex layout. Prints on exactly one sheet per page, no blank trailing page.
-- **Never fabricate phonetics or meanings** — if a word is outside the built-in lexicon, the skill asks the user rather than guess. Wrong IPA actively mis-teaches a young learner.
+- **仅支持小写 a–z** — Hershey defs 不覆盖 A–Z，大写输入会静默转小写。
+- **单词长度 ≤ 约 20 字符** — 字宽累加必须装进 SVG viewBox `0 0 1000 120`。
+- **完全离线** — 没有 Google Fonts、没有外链 CSS/JS/图片，生成的 HTML 在断网环境也能打开和打印。
+- **严格 A4** — `@page { size: A4; margin: 0 }` + `.page { height: 297mm; overflow: hidden }` 配合 flex 布局。每个 page 严格 1 张 A4，不会出空白尾页。
+- **绝不瞎编音标或释义** — 词库里没有的词，skill 会停下来问用户，而不是猜。错误的 IPA 会误导学龄前的小朋友。
 
-## Packaging
+## 打包
 
-The `.skill` bundle is produced by Anthropic's official `skill-creator` tooling:
+`.skill` 文件由 Anthropic 官方 `skill-creator` 工具生成：
 
 ```bash
-# From inside an environment where claude-plugins-official is installed
+# 前提：本地装有 claude-plugins-official 插件
 python3 -m scripts.package_skill \
-  /home/<user>/Projects/english/.claude/skills/tracing-cards \
-  /home/<user>/Projects/english/dist
+  /home/<用户>/Projects/english/.claude/skills/tracing-cards \
+  /home/<用户>/Projects/english/dist
 ```
 
-`evals/` is deliberately excluded from the `.skill` bundle (it's a dev-time regression asset, kept only in source).
+`evals/` 目录会被官方脚本自动剔除（它是开发期的回归资产，只保留在源仓库，不随分发包发布）。
 
-## Contributing
+## 贡献方式
 
-This is a small personal project. If you want to extend:
+个人小项目，如果你想扩展：
 
-- **Lexicon** — edit the table in `.claude/skills/tracing-cards/SKILL.md` (emoji + IPA + 中文 per word).
-- **Grid / layout** — touch `assets/template.html` CSS carefully; re-run `evals/evals.json` after changes.
-- **Test prompts** — add a new case to `evals/evals.json` with `id`, `name`, `prompt`, `expected_output`, `assertions[]`.
+- **加词库** — 编辑 `.claude/skills/tracing-cards/SKILL.md` 里的词表（emoji + IPA + 中文 三列）。
+- **改版式** — 调 `assets/template.html` 的 CSS；改完要跑一遍 `evals/evals.json` 确认没退化。
+- **加测试** — 在 `evals/evals.json` 里加一条：`id` / `name` / `prompt` / `expected_output` / `assertions[]`。
 
-## License
+## 许可证
 
-MIT — see [`.claude/skills/tracing-cards/LICENSE`](.claude/skills/tracing-cards/LICENSE).
+MIT — 详见 [`.claude/skills/tracing-cards/LICENSE`](.claude/skills/tracing-cards/LICENSE)。
