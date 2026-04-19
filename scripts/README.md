@@ -67,3 +67,41 @@ python3 scripts/html_to_pdf.py tracing-cards-animals.html
 # 用 pdfinfo 核对页数 = ceil(词数/4)
 pdfinfo tracing-cards-animals.pdf | grep Pages
 ```
+
+## package_skill.sh
+
+重新打包 `.claude/skills/<name>/` 为 `dist/<name>.skill`。
+
+### 用法
+
+```bash
+scripts/package_skill.sh tracing-cards
+```
+
+就是一层 `zip -qr` + `-x 'evals/*'`，不依赖任何外部工具（官方 skill-creator 或 claude-plugins-official 都不是必需）。
+
+`evals/` 按约定排除——它是开发期的回归资产，不随分发包发布。
+
+## check_skill_freshness.py
+
+Stop hook：检测任一 `.claude/skills/<name>/` 源文件是否比 `dist/<name>.skill` 更新。
+
+### 行为
+
+- 遍历 `dist/*.skill`，反查对应源目录
+- `evals/` 不计入比较（它本就不在包里）
+- 任一源文件 mtime 晚于 `.skill`（1 秒容差）→ stdout 输出 `{"decision":"block","reason":"..."}`，Claude Code 把 reason 反馈给 agent、阻止会话结束
+- 全部 fresh → 静默 exit 0
+
+### 注册位置
+
+`.claude/settings.json` 的 `hooks.Stop`。会话结束时自动触发，人工跑也行：
+
+```bash
+python3 scripts/check_skill_freshness.py
+echo "exit=$?"
+```
+
+### 绕过
+
+确实不需要重打时（例如只改了非分发内容），`touch dist/<name>.skill` 刷新 mtime。

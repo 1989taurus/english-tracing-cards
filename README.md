@@ -118,16 +118,24 @@ Hershey 版线条干净、单笔画，最适合描红；OC 版实现更简单但
 
 ## 打包
 
-`.skill` 文件由 Anthropic 官方 `skill-creator` 工具生成：
+改动 `.claude/skills/<name>/` 下任意文件后，用项目自带的脚本重打 `.skill`：
 
 ```bash
-# 前提：本地装有 claude-plugins-official 插件
-python3 -m scripts.package_skill \
-  /home/<用户>/Projects/english/.claude/skills/tracing-cards \
-  /home/<用户>/Projects/english/dist
+scripts/package_skill.sh tracing-cards
+# → 覆盖写 dist/tracing-cards.skill
 ```
 
-`evals/` 目录会被官方脚本自动剔除（它是开发期的回归资产，只保留在源仓库，不随分发包发布）。
+脚本是一层 zip 加 `-x 'evals/*'`，不依赖任何外部工具。`evals/` 是开发期的回归资产，只保留在源仓库，不随分发包发布。
+
+### 自动新鲜度检查（Stop hook）
+
+`.claude/settings.json` 注册了一个 Stop hook，每次会话结束时跑 [`scripts/check_skill_freshness.py`](scripts/check_skill_freshness.py)：
+
+- 遍历 `dist/*.skill`，反查 `.claude/skills/<name>/` 源目录
+- 任一源文件（evals/ 除外）mtime 晚于 `.skill` 产物 → **阻止会话结束**，提示 Claude 跑 `scripts/package_skill.sh` 重打
+- 全部 fresh → 静默放行
+
+换句话说：忘了重打包就走不了，hook 会把你叫回来。如果确实不需要重打（比如改的是别的 skill），`touch dist/<name>.skill` 即可绕过。
 
 ## 贡献方式
 
