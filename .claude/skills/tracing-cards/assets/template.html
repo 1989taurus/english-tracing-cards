@@ -123,6 +123,10 @@
     display: block;
     overflow: visible;
   }
+  /* 结构性保证（v1.3.1+）：首份纯黑参考、其余浅蓝副本。
+     CSS 覆盖 SVG inline stroke 属性；即使生成阶段写错 stroke 颜色，渲染结果仍然正确。 */
+  .row-letters > g:first-of-type { stroke: #000000 !important; }
+  .row-letters > g:not(:first-of-type) { stroke: #b8d9ee !important; }
   .footer-tip {
     text-align: center;
     font-size: 9pt;

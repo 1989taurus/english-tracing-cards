@@ -3,7 +3,7 @@ name: tracing-cards
 description: Generate printable A4 English word tracing practice worksheets for kindergarten-age children (3-6 years old). Produces a self-contained, fully offline HTML file featuring 四线三格 (four-line three-space) handwriting grid, Hershey Futural solid single-stroke SVG tracing letters, emoji illustrations, IPA phonetics, and Chinese meanings. Use this skill whenever a user mentions 英语描红, 描红卡, 描红练习, 单词描红, 英文练字帖, tracing worksheet, tracing cards, handwriting practice, kindergarten English, preschool English writing, printable word practice for kids, or asks a parent/teacher-style request to create printable letter/word practice sheets for young children — even when they don't literally say 描红卡 or tracing. Also trigger for requests like 给孩子做一份英文单词练习打印, 幼儿园英语字帖, preschool handwriting sheet.
 license: MIT
 metadata:
-  version: 1.3.0
+  version: 1.3.1
   authors:
     - 1989taurus
 ---
@@ -130,7 +130,7 @@ tracing-cards/
    - 把每个 `{{ROW_TRACE}}` 标记替换成完整 SVG（见第 3 步）。
    - 把每个 `{{ROW_BLANK}}` 标记按 ROW_BLANK 片段原样替换（只有网格，没有字母）。
 
-3. 构建每一行 `{{ROW_TRACE}}` SVG —— 首份深蓝 + 若干浅蓝副本**铺满行**：
+3. 构建每一行 `{{ROW_TRACE}}` SVG —— 首份纯黑 `#000000` + 若干浅蓝 `#b8d9ee` 副本**铺满行**：
 
    **a. 计算每个字母的 x 偏移（单词内部相对位置）**
    - 从下面的半宽表查出每个字母的半宽 `o`。
@@ -207,7 +207,7 @@ tracing-cards/
 2. 数 `<div class="card">` 出现次数——应等于词数。
 3. 数 `<section class="page">`——应等于 `ceil(词数 / 4)`。
 4. 对输出 grep `height: 297mm`、`@page`、`overflow: hidden`——确认严格 A4 CSS 经过模板替换后仍在位。任何一项缺失，文件都会打出空白尾页或溢出。
-5. **铺满行校验**：任取一张 CARD，数 `<g transform="translate(` 出现次数，应为 `2 × (1 + N)`（2 行描红 × 每行 1 份黑色参考 + N 份浅蓝副本；ROW_BLANK 无 `<g transform=`，只有网格线）。同时对输出 grep `#b8d9ee`——单词不是极长时应至少出现一次。同时 grep `stroke="#000000"`——每张卡应至少出现 2 次（2 行描红各一份首参考）。**双 SVG 架构校验**（v1.3.0+）：grep `class="row-grid"` 出现次数应等于 `4 × 词数`（每卡 4 行都有网格），grep `class="row-letters"` 出现次数应等于 `2 × 词数`（只有描红行有字母层）。
+5. **铺满行校验**：任取一张 CARD，数 `<g transform="translate(` 出现次数，应为 `2 × (1 + N)`（2 行描红 × 每行 1 份黑色参考 + N 份浅蓝副本；ROW_BLANK 无 `<g transform=`，只有网格线）。同时对输出 grep `#b8d9ee`——单词不是极长时应至少出现一次。**首份纯黑校验**（v1.3.1+ 双层防御）：(a) grep `stroke="#000000"`——每张卡应 = 2 次（inline 层防御；若不符，提示用户"模型 inline 写错，但 CSS 兜底仍保证视觉正确，建议重新生成"）；(b) grep `g:first-of-type { stroke: #000000` 和 `g:not(:first-of-type) { stroke: #b8d9ee`——全文件应各恰好 = 1 次（CSS 兜底层防御；缺一即模板被破坏，必须报错）。**双 SVG 架构校验**（v1.3.0+）：grep `class="row-grid"` 出现次数应等于 `4 × 词数`（每卡 4 行都有网格），grep `class="row-letters"` 出现次数应等于 `2 × 词数`（只有描红行有字母层）。
 6. **PDF 校验**（仅当 step 7 成功生成 PDF 时）：
    - 文件存在且 > 10 KB。
    - 若系统有 `pdfinfo`（poppler-utils 提供）：页数 = `ceil(词数 / 4)`，页尺寸约等于 A4（595×842 pt 或 210×297 mm，允许 ±1 pt 浮动）。

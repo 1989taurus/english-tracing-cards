@@ -5,6 +5,26 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.1] — 2026-04-19
+
+### 新增
+
+- **CSS 结构性保证首份描红纯黑。** `assets/template.html` 的 `<style>` 新增两条规则：
+  ```css
+  .row-letters > g:first-of-type { stroke: #000000 !important; }
+  .row-letters > g:not(:first-of-type) { stroke: #b8d9ee !important; }
+  ```
+  CSS 按标准优先级覆盖 SVG inline `stroke` 属性，渲染引擎（Chrome / Chromium headless / Playwright / WeasyPrint）一律遵守。**从此"首份纯黑"不再依赖模型正确写 inline `stroke`——即使模型回归把首份写错颜色，PDF 渲染结果仍然保证是黑色。** 副作用：浅蓝副本同样结构性锁死为 `#b8d9ee`，任何 inline 颜色漂移都被 CSS 覆盖。`references/example.html` 同步加入同样 CSS 规则。
+
+### 修复
+
+- **首份参考字母在生成阶段仍被写成深蓝的潜在回归。** v1.2.0 把首份描红颜色从深蓝 `#5a9ed0` 改成纯黑 `#000000`，但 SKILL.md 的生成步骤 3 标题行残留"首份深蓝 + 若干浅蓝副本**铺满行**"的旧叙述，与同一步骤 3d 的 `stroke="#000000"` 规范、规则清单"描红行铺满"、教学意图说明三处互相矛盾。模型读到矛盾描述时可能回退到历史 hex（`#5a9ed0`）。本版本把步骤 3 标题改为"首份纯黑 `#000000` + 若干浅蓝 `#b8d9ee` 副本**铺满行**"，消除唯一残留矛盾。**搭配上面的 CSS 兜底，构成双层防御**：文档层（inline stroke 正确）+ 渲染层（CSS 覆盖）。
+
+### 变更
+
+- SKILL.md 验证步骤 5 扩写首份校验：新增 CSS 规则存在性 grep（`g:first-of-type { stroke: #000000` 和 `g:not(:first-of-type) { stroke: #b8d9ee` 各 = 1 次），缺失即模板被破坏；inline `stroke="#000000"` 的 grep 从"至少 2 次"收紧为"= 2 次"，并把错误定性从"必须重新生成"降级为"CSS 兜底仍保证视觉正确，建议重新生成"。
+- CHANGELOG 1.3.1 条目从单纯叙述修正升级为双层防御发布。
+
 ## [1.3.0] — 2026-04-19
 
 ### 新增
