@@ -17,7 +17,7 @@
   - 2 行空白练习
 - 每页 4 张卡片，严格 `height: 297mm`，正好打印 1 张 A4 纸。
 - 内置约 50 个幼儿园常用词（动物、水果、颜色、数字、家庭等）。
-- **同时生成 HTML 和 A4 PDF**，skill 自动调用仓库根的 `scripts/html_to_pdf.py`（双后端：系统 Chrome 优先，Playwright 降级；两者都缺时软降级，HTML 仍可用）。
+- **同时生成 HTML 和 A4 PDF**，skill 自动调用自带的 `scripts/html_to_pdf.py`（随 `.skill` 分发；双后端：系统 Chrome 优先，Playwright 降级；两者都缺时软降级，HTML 仍可用）。
 
 ## 安装
 

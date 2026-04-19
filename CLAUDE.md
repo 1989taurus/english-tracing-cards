@@ -30,9 +30,10 @@
 
 1. **访谈用户** — 用 `AskUserQuestion` 问四件事：单词列表、主题名称、是否自动补全、输出路径。不要跳过。
 2. 对每个单词：从词库或用户输入里取 emoji/音标/释义（词库没有就问用户，绝不瞎猜），单词转小写，填到 CARD 片段里。
-3. 对 `tracing-cards/`（Hershey）：按 SKILL.md 里的半宽表算出每个字母的 x 偏移，用 `<use>` 元素加缩放 `<g>` transform 组装 SVG。
+3. 对 `tracing-cards/`（Hershey）：按 SKILL.md 里的半宽表算出每个字母的 x 偏移，用 `<use>` 元素加缩放 `<g>` transform 组装 SVG。每行描红按公式 `N = floor((980 − word_width_svg) / (word_width_svg + 40))` 生成 1 份深蓝 `#5a9ed0` 参考 + N 份浅蓝 `#b8d9ee` 副本铺满整行。
 4. 每 4 张卡片组成一个 PAGE_WRAPPER（`{{THEME}}` 填用户指定的主题名），塞进 `assets/template.html` 的 `{{PAGES}}` 位置。
 5. **验证**：读回前 30 行、数 `<div class="card">` 等于单词数、数 `<section class="page">` 等于 ceil(单词数/4)、把计数报告给用户。
+6. **生成 PDF**（默认开启）：调用 skill 自带 `<skill 根>/scripts/html_to_pdf.py <html 路径>`，在 HTML 同目录产 `.pdf`。双后端（系统 Chrome ≥ 109 优先，Playwright 降级），都没有时软降级并 stderr 报警——**HTML 仍是完整可用产物**。
 
 ## 硬性约束（无必要不要动）
 
