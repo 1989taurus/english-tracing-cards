@@ -8,19 +8,15 @@
 
 ## 架构
 
-`.claude/skills/` 下有两套本地 skill。当前主推的是 `tracing-cards/`，遵循 `/skill-creator` 的标准布局——`SKILL.md`（权威规范：访谈流程、词库、生成步骤）加上 `assets/`（`template.html` HTML 外壳含 `{{PAGES}}` 占位符，`snippets.html` 可复用片段）、`references/`（`example.html` 参考输出）、`evals/`（skill 迭代用的测试 prompt）。旧的 `tracing-cards-oc/` 仍是扁平布局。
+`.claude/skills/tracing-cards/` 是本仓库唯一的 skill，遵循 `/skill-creator` 的标准布局——`SKILL.md`（权威规范：访谈流程、词库、生成步骤）加上 `assets/`（`template.html` HTML 外壳含 `{{PAGES}}` 占位符，`snippets.html` 可复用片段）、`references/`（`example.html` 参考输出）、`scripts/html_to_pdf.py`（HTML → A4 PDF，随 `.skill` 分发）、`evals/`（skill 迭代用的测试 prompt，不打包进 `.skill`）。
 
-### `tracing-cards/` — 主推方案
+### 渲染方式
 
 用 **Hershey Futural 单笔画字体**，以 SVG `<path>` 嵌在全局 `<defs>` 里，通过 `<use href="#l-X">` 引用，x 偏移量按每个字母的半宽累加得出。线条干净、单笔画，最适合描红。
 
-### `tracing-cards-oc/` — 旧方案兜底
+### 片段结构
 
-用 Comic Sans MS 的 `<text>` 元素加 `stroke-dasharray="4,3"` 画虚线轮廓。生成逻辑简单（不用算偏移），但依赖系统字体，打印效果不稳定。
-
-### 共用结构
-
-两套 skill 的片段一致：`PAGE_WRAPPER` → `CARD`（每页 ×4）→ 2 × `ROW_TRACE` + 2 × `ROW_BLANK`。访谈流程、约 50 词的词库、验证步骤也一致。
+`PAGE_WRAPPER` → `CARD`（每页 ×4）→ 2 × `ROW_TRACE` + 2 × `ROW_BLANK`。
 
 ### 生成产物
 

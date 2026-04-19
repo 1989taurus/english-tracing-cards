@@ -21,17 +21,14 @@
 
 ## 不变式
 
-- 描红词仅支持小写（Hershey 最多约 20 字符，OC 版最多约 12 字符）
+- 描红词仅支持小写，最多约 20 字符（Hershey 字宽累加必须装进 viewBox 1000）
 - 完全离线：内嵌 SVG + Hershey path + emoji，不引用任何外部资源
 - SVG 网格：viewBox `0 0 1000 120`，线在 y=0, 40, 80, 120
 - Hershey 渲染：`<use href="#l-X">` 加 `translate(20,17.143) scale(2.857143)` transform
 
-## Skills
+## Skill
 
-| Skill | 实现方式 | 状态 |
-|---|---|---|
-| `.claude/skills/tracing-cards/` | Hershey Futural 单笔画 SVG path | 当前主推 |
-| `.claude/skills/tracing-cards-oc/` | Comic Sans 轮廓 + stroke-dasharray | 旧方案兜底 |
+`.claude/skills/tracing-cards/` — Hershey Futural 单笔画 SVG path，本仓库唯一的 skill。
 
 ## 参考
 

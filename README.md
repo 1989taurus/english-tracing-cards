@@ -85,21 +85,20 @@ TRACING_CARDS_PRINTER=OtherName python3 html_to_pdf.py ...  # 指定打印机
 .
 ├── .claude/
 │   └── skills/
-│       ├── tracing-cards/            # 当前主推方案 — Hershey 单笔画 SVG
-│       │   ├── SKILL.md              # 权威规范（访谈流程、词库、规则）
-│       │   ├── README.md             # skill 内部说明
-│       │   ├── CHANGELOG.md
-│       │   ├── LICENSE               # MIT
-│       │   ├── assets/
-│       │   │   ├── template.html     # A4 外壳 + Hershey a–z <defs>
-│       │   │   └── snippets.html     # 页 / 卡 / 行 片段
-│       │   ├── references/
-│       │   │   └── example.html      # 4 卡参考输出
-│       │   ├── scripts/
-│       │   │   └── html_to_pdf.py    # HTML → A4 PDF 转换器（双后端，随 .skill 分发）
-│       │   └── evals/
-│       │       └── evals.json        # 回归测试用例
-│       └── tracing-cards-oc/         # 旧方案 — Comic Sans 虚线轮廓
+│       └── tracing-cards/            # Hershey 单笔画 SVG
+│           ├── SKILL.md              # 权威规范（访谈流程、词库、规则）
+│           ├── README.md             # skill 内部说明
+│           ├── CHANGELOG.md
+│           ├── LICENSE               # MIT
+│           ├── assets/
+│           │   ├── template.html     # A4 外壳 + Hershey a–z <defs>
+│           │   └── snippets.html     # 页 / 卡 / 行 片段
+│           ├── references/
+│           │   └── example.html      # 4 卡参考输出
+│           ├── scripts/
+│           │   └── html_to_pdf.py    # HTML → A4 PDF 转换器（双后端，随 .skill 分发）
+│           └── evals/
+│               └── evals.json        # 回归测试用例
 ├── dist/
 │   └── tracing-cards.skill           # 官方格式打包产物（解压到 ~/.claude/skills/）
 ├── scripts/
@@ -110,15 +109,6 @@ TRACING_CARDS_PRINTER=OtherName python3 html_to_pdf.py ...  # 指定打印机
 ├── CLAUDE.md                         # 每次会话自动载入的项目指令
 └── README.md                         # 就是你正在看的这份
 ```
-
-## 两套 skill 的差异
-
-| Skill | 渲染方式 | 状态 |
-|---|---|---|
-| [`tracing-cards/`](.claude/skills/tracing-cards/) | Hershey Futural 单笔画 SVG path | **主推 / 推荐** |
-| [`tracing-cards-oc/`](.claude/skills/tracing-cards-oc/) | Comic Sans `<text>` + `stroke-dasharray` | 旧方案 / 兜底 |
-
-Hershey 版线条干净、单笔画，最适合描红；OC 版实现更简单但依赖系统字体，打印效果不稳定。
 
 ## 硬性约束（不要随便改）
 
