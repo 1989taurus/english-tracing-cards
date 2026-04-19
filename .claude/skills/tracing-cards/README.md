@@ -2,7 +2,9 @@
 
 一个 Claude Code skill，用来生成可打印 A4 英语单词描红卡，面向幼儿园年龄段（3–6 岁）的小朋友。
 
-**版本：** 1.1.0 · **许可证：** MIT · **输出完全离线**
+**版本：** 1.1.1 · **许可证：** MIT · **输出完全离线**
+
+> ⚠️ **v1.1.0 有缺陷**：PDF 脚本未随 skill 打包，PDF 功能不可用。请使用 v1.1.1 或以上。
 
 > 本 skill 由 **Claude Opus 4.7** 在 Claude Code 中协作完成：规范起草、Hershey 字体布局、严格 A4 CSS、官方 `.skill` 格式打包。
 
@@ -31,13 +33,16 @@ tracing-cards/
 ├── SKILL.md
 ├── README.md
 ├── CHANGELOG.md
+├── LICENSE
 ├── assets/
 │   ├── template.html
 │   └── snippets.html
 ├── references/
 │   └── example.html
+├── scripts/
+│   └── html_to_pdf.py     # 随 skill 分发，提供 HTML → A4 PDF
 └── evals/
-    └── evals.json
+    └── evals.json         # 只在源仓库，不随 .skill 打包
 ```
 
 无需 npm / pip，无需构建。Claude Code 下次启动会自动识别。

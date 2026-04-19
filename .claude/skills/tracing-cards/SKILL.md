@@ -3,7 +3,7 @@ name: tracing-cards
 description: Generate printable A4 English word tracing practice worksheets for kindergarten-age children (3-6 years old). Produces a self-contained, fully offline HTML file featuring 四线三格 (four-line three-space) handwriting grid, Hershey Futural solid single-stroke SVG tracing letters, emoji illustrations, IPA phonetics, and Chinese meanings. Use this skill whenever a user mentions 英语描红, 描红卡, 描红练习, 单词描红, 英文练字帖, tracing worksheet, tracing cards, handwriting practice, kindergarten English, preschool English writing, printable word practice for kids, or asks a parent/teacher-style request to create printable letter/word practice sheets for young children — even when they don't literally say 描红卡 or tracing. Also trigger for requests like 给孩子做一份英文单词练习打印, 幼儿园英语字帖, preschool handwriting sheet.
 license: MIT
 metadata:
-  version: 1.1.0
+  version: 1.1.1
   authors:
     - 1989taurus
 ---
@@ -164,7 +164,7 @@ tracing-cards/
 6. 把最终 HTML 写到用户指定的输出路径。
 
 7. **生成 PDF**（默认开启，不额外问用户）：
-   - 调用仓库脚本 `scripts/html_to_pdf.py <html 输出路径>`，在相同目录下产出 `tracing-cards-<slug>.pdf`。
+   - 调用 skill 自带脚本 `<skill 根>/scripts/html_to_pdf.py <html 输出路径>`，在 HTML 相同目录下产出 `tracing-cards-<slug>.pdf`。脚本随 `.skill` 打包分发，不依赖仓库根。
    - 脚本内部已实现双后端探测（系统 Chrome ≥109 优先，Playwright 降级）、独立 user-data-dir、A4/彩色背景保留、产物尺寸校验。
    - **软降级**：若脚本退出码非 0（例如两个后端都缺），不要中止整个 skill。继续完成 step 8 的总结，并在总结里明确说明"PDF 未生成：<原因>"以及给出的安装指令（Chrome 或 `pip install playwright`）。HTML 本身仍然是完整可用的产物。
    - Linux 环境脚本会探测彩色 emoji 字体（`fc-list | grep -i 'color emoji'`）；缺失时仍会出 PDF，但颜色退化为黑白 —— 脚本 stderr 会发 WARNING，把这条警告原样传进最终总结。

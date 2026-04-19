@@ -5,7 +5,18 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [1.1.0] — 2026-04-19
+## [1.1.1] — 2026-04-19
+
+### 修复
+
+- **v1.1.0 严重缺陷**：SKILL.md 声称会调用 `scripts/html_to_pdf.py` 生成 PDF，但该脚本实际在仓库根部 `scripts/` 而非 skill 目录下，`.skill` 包里没带它。按 README 第一条 `unzip dist/tracing-cards.skill -d ~/.claude/skills/` 装完后，skill 调用 PDF 脚本会找不到文件，PDF 功能完全不可用，HTML 仍可生成。**建议已装 v1.1.0 的用户立刻升到 v1.1.1。**
+- 修复：把 `html_to_pdf.py` 从仓库根 `scripts/` 挪到 skill 自带的 `.claude/skills/tracing-cards/scripts/html_to_pdf.py`，随 `.skill` 分发。
+- SKILL.md step 7 措辞："仓库脚本" → "skill 自带脚本 `<skill 根>/scripts/html_to_pdf.py`"，明确路径契约。
+- `scripts/package_skill.sh`：打包排除规则新增 `__pycache__/` 和 `*.pyc`，避免把本地开发缓存打进分发包。
+
+## [1.1.0] — 2026-04-19 — ⚠️ 已弃用
+
+**此版本不要使用**。声称支持 PDF 生成，但 `html_to_pdf.py` 未随 `.skill` 打包分发，PDF 功能无法使用。用 v1.1.1。
 
 ### 新增
 

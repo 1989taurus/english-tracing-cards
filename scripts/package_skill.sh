@@ -17,7 +17,8 @@ mkdir -p "$REPO_ROOT/dist"
 rm -f "$OUT"
 
 (cd "$REPO_ROOT/.claude/skills" && zip -qr "$OUT" "$SKILL_NAME" \
-  -x "$SKILL_NAME/evals/*" "$SKILL_NAME/evals")
+  -x "$SKILL_NAME/evals/*" "$SKILL_NAME/evals" \
+     "$SKILL_NAME/**/__pycache__/*" "$SKILL_NAME/**/*.pyc")
 
 SIZE=$(du -h "$OUT" | cut -f1)
 FILES=$(unzip -l "$OUT" | tail -1 | awk '{print $2}')
