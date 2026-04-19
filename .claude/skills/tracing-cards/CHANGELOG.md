@@ -5,6 +5,21 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.0] — 2026-04-19
+
+### 新增
+
+- **每行铺满副本。** ROW_TRACE 现在由首份深蓝 `#5a9ed0` 参考样例 + 若干浅蓝 `#b8d9ee` 副本组成，按 `N = floor((980 − word_width_svg) / (word_width_svg + 40))` 自动铺满整行。教学意图：深色是"长什么样"的参考，浅色才是给孩子描的本体。长词（`word_width_svg > 940`）自动回退为 N=0，只留首份。
+- **HTML → A4 PDF 自动生成。** skill 在写完 HTML 后自动调用仓库根的 `scripts/html_to_pdf.py`，产出同名 `.pdf`。脚本内置双后端（系统 Chrome ≥ 109 优先，Playwright 降级），独立 `--user-data-dir`、`--no-pdf-header-footer`、`--virtual-time-budget=5000`、产物尺寸校验。两个后端都缺时软降级，不中止 skill —— HTML 仍是完整可用产物。
+- Linux 彩色 emoji 字体探测（`fc-list`）：缺失时 stderr 发 WARNING 并透传到总结，PDF 仍会出但 emoji 退化为黑白轮廓。
+- `references/example.html` 按新算法重新生成，cat/dog/pig/duck 每行 4–5 份副本。
+- 验证新增两项：描红行 `<g transform="translate(` 计数 = `2 × (1 + N)` per card；PDF > 10 KB 且 `pdfinfo` 报 A4 页大小。
+
+### 变更
+
+- SKILL.md 生成步骤 3 从"发射单组 SVG"改为"按公式计算 N，发射 1+N 组"。
+- 规则清单新增"描红行铺满"条目，解释为什么第二份起是浅色。
+
 ## [1.0.0] — 2026-04-17
 
 首个可分发的正式版本。

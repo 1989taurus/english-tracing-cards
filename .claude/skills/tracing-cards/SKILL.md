@@ -3,7 +3,7 @@ name: tracing-cards
 description: Generate printable A4 English word tracing practice worksheets for kindergarten-age children (3-6 years old). Produces a self-contained, fully offline HTML file featuring 四线三格 (four-line three-space) handwriting grid, Hershey Futural solid single-stroke SVG tracing letters, emoji illustrations, IPA phonetics, and Chinese meanings. Use this skill whenever a user mentions 英语描红, 描红卡, 描红练习, 单词描红, 英文练字帖, tracing worksheet, tracing cards, handwriting practice, kindergarten English, preschool English writing, printable word practice for kids, or asks a parent/teacher-style request to create printable letter/word practice sheets for young children — even when they don't literally say 描红卡 or tracing. Also trigger for requests like 给孩子做一份英文单词练习打印, 幼儿园英语字帖, preschool handwriting sheet.
 license: MIT
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   authors:
     - 1989taurus
 ---
