@@ -5,6 +5,27 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.0] — 2026-04-19
+
+### 新增
+
+- **双 SVG 架构铺满最右侧。** ROW_TRACE / ROW_BLANK 从单 SVG 拆成两层：底层 `row-grid` 用 `preserveAspectRatio="none"` + `vector-effect="non-scaling-stroke"`，viewBox `0 0 1000 120` 横向拉伸到容器最右（消除原先约 22mm 右留白）；上层 `row-letters` viewBox `0 0 1250 120` 保留 `xMinYMid meet`，字母仍按 1:1 比例渲染、不变形。两层通过 `.row { position: relative }` + `.row-grid/.row-letters { position: absolute; inset: 0 }` 叠放。
+- **单词副本间距 40 → 80 SVG 单位**（打印约 ≈ 14mm）。原间距下相邻单词的"末字母 / 首字母"视觉上粘在一起（尤其 e/a/m/w 等宽字符结尾的词），加大后视觉分组清晰。
+- 公式同步调整为 `N = floor((1210 − word_width_svg) / (word_width_svg + 80))`，长词阈值 `word_width_svg > 1210` 自动回退 N=0。代表性单词密度验证：cat (149)→5 份、apple (234)→4 份、flower (268)→3 份。
+
+### 修复
+
+- **macOS 中文 locale 自动打印。** 上一版 (1.2.0) 的 lpstat 解析靠 `LC_ALL=C` 强制英文，但 macOS 部分场景忽略该环境变量、仍输出中文（"打印机 XXX 目前空闲"/"系统默认目的位置：XXX"）。本版改为双语正则：`get_default_printer()` 同时匹配 `default destination:` 与 `系统默认目的位置：`；`list_available_printers()` 同时匹配 `printer <name> is idle` 与 `打印机 <name> 目前空闲`。修复前 macOS 中文系统上自动打印路径静默失败。
+
+### 变更
+
+- `assets/snippets.html` 的 ROW_TRACE / ROW_BLANK 完全重写为双 SVG 结构；`{{TRACE_SVG}}` 占位符改为 `{{LETTER_GROUPS}}`，只填字母 `<g>` 元素。
+- `assets/template.html` 的 `.row` 改为 `position: relative`，`.row .row-grid` 和 `.row .row-letters` 都是 `position: absolute; inset: 0`。
+- SKILL.md 生成步骤 3c/3d 重写：新公式、`Xk = 20 + k * (word_width_svg + 80)`、dual-SVG 拼装。
+- SKILL.md 验证步骤 5 新增：每行 `class="row-grid"` 数量 = 4 × 单词数、`class="row-letters"` 数量 = 2 × 单词数。
+- CLAUDE.md 同步新公式、dual-SVG 说明，修正描红 stroke 颜色描述（首份 `#000000`、副本 `#b8d9ee`；旧文档残留的 `#5a9ed0` 是 v1.2.0 前的状态）。
+- `references/example.html` 按 v1.3.0 新算法重生成。
+
 ## [1.2.0] — 2026-04-19
 
 ### 新增

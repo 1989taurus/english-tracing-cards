@@ -8,10 +8,11 @@
 - 每张卡片：emoji + 单词 + 音标 + 中文释义
 - 2 行描红，**每行首份纯黑 `#000000` 参考 + 若干浅蓝 `#b8d9ee` 副本铺满整行**（小朋友按浅色笔画描红）
 - 2 行空白练习，印在 四线三格 格子上
+- **双 SVG 架构**（v1.3.0+）：四线格 `preserveAspectRatio="none"` 铺满容器最右侧，字母层保持 1:1 比例渲染；单词副本间距 80 SVG 单位（≈ 14mm 打印），相邻单词视觉分组清晰
 - Hershey Futural 单笔画 SVG 字母，实线描红、非虚线
 - 内置约 50 个幼儿园常用词（动物、水果、颜色、数字、家庭等）
 - **同时生成 HTML 和 A4 PDF**（基于系统 Chrome 或 Playwright 任一）
-- **PDF 生成后自动送默认打印机**（Linux/macOS CUPS `lp`，无打印机自动跳过，不中断）
+- **PDF 生成后自动送默认打印机**（Linux/macOS CUPS `lp`，无打印机自动跳过，不中断；v1.3.0+ 支持 macOS 中文 locale）
 
 ![layout](https://img.shields.io/badge/layout-A4%20297mm-blue) ![skill](https://img.shields.io/badge/claude--code-skill-7c3aed) ![license](https://img.shields.io/badge/license-MIT-green)
 

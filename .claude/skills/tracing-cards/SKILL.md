@@ -3,7 +3,7 @@ name: tracing-cards
 description: Generate printable A4 English word tracing practice worksheets for kindergarten-age children (3-6 years old). Produces a self-contained, fully offline HTML file featuring 四线三格 (four-line three-space) handwriting grid, Hershey Futural solid single-stroke SVG tracing letters, emoji illustrations, IPA phonetics, and Chinese meanings. Use this skill whenever a user mentions 英语描红, 描红卡, 描红练习, 单词描红, 英文练字帖, tracing worksheet, tracing cards, handwriting practice, kindergarten English, preschool English writing, printable word practice for kids, or asks a parent/teacher-style request to create printable letter/word practice sheets for young children — even when they don't literally say 描红卡 or tracing. Also trigger for requests like 给孩子做一份英文单词练习打印, 幼儿园英语字帖, preschool handwriting sheet.
 license: MIT
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   authors:
     - 1989taurus
 ---
@@ -142,15 +142,15 @@ tracing-cards/
    - `word_width_svg = word_width_hershey * 2.857143`。
 
    **c. 计算浅色副本数 N**
-   - `N = floor((980 - word_width_svg) / (word_width_svg + 40))`
-   - 常量：左右余量合计 20（对应首份 `translate(20, ...)`），副本与副本之间间距固定 40 SVG 单位。
-   - 单词过长（`word_width_svg > 940`）时 N = 0，只保留首份深色——静默回退，不报错。
+   - `N = floor((1210 - word_width_svg) / (word_width_svg + 80))`
+   - 常量：字母 SVG viewBox 宽度 1250，左右余量合计 40（首份 `translate(20, ...)` 从 x=20 起、右侧留 20 作安全余量，故可用区为 `1210`）；副本之间间距固定 **80** SVG 单位（v1.3.0 由 40 上调，避免相邻单词首/末字母视觉粘连）。
+   - 单词过长（`word_width_svg > 1210`）时 N = 0，只保留首份纯黑——静默回退，不报错。
 
-   **d. 发射 SVG**
-   - 先画 y=0/40/80/120 的网格线。
-   - 再发射 1 + N 个 `<g>`，第 k 个（k=0..N）的 transform 为 `translate(Xk, 17.143) scale(2.857143)`：
+   **d. 发射 SVG**（字母层，网格层由 snippets.html 的 ROW_TRACE 模板提供，不在此步发射）
+   - ROW_TRACE 是双 SVG 架构：`<svg class="row-grid" preserveAspectRatio="none">`（网格铺满全宽，模板里已写死）+ `<svg class="row-letters" viewBox="0 0 1250 120" preserveAspectRatio="xMinYMid meet">`（字母保持比例）。你只需在字母层里发射 1 + N 个 `<g>`，把结果填到 snippets.html 的 `{{LETTER_GROUPS}}` 占位符。
+   - 第 k 个 `<g>`（k=0..N）的 transform 为 `translate(Xk, 17.143) scale(2.857143)`：
      - `X0 = 20`（首份纯黑）
-     - `Xk = 20 + k * (word_width_svg + 40)`（k ≥ 1 浅蓝副本）
+     - `Xk = 20 + k * (word_width_svg + 80)`（k ≥ 1 浅蓝副本）
    - 首份（k=0）`<g>` 属性：`fill="none" stroke="#000000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"`。
    - 浅色副本（k≥1）`<g>` 仅把 `stroke` 改成 `#b8d9ee`，其余属性一致。
    - 每个 `<g>` 里复用同一套字母 offset：`<use href="#l-LETTER" x="OFFSET"/>`。
@@ -188,7 +188,7 @@ tracing-cards/
 - **输出完全离线自包含。** 所有资源必须内联（SVG + emoji + 系统字体）。不用 Google Fonts、不用外部 CSS、不用网络资源。原因：练习卡经常要在没网的设备上打印，外部字体拉不下来就毁了整张纸。
 - **保留四线格坐标**（viewBox `0 0 1000 120` 中 y = 0 / 40 / 80 / 120）。这四条线定义了四线三格的书写区，挪动就把教学用意毁了。
 - **Hershey 单笔画渲染。** 所有字母通过 `<use href="#l-X">` 引用 `template.html` 里的 defs，实线蓝色描边（实线非虚线）。只描边、不填充。
-- **描红行铺满。** 每行首份用纯黑 `#000000`（参考样例，对幼儿园孩子视觉最强、接近真墨水），后续浅蓝 `#b8d9ee` 副本按间距 40 SVG 单位铺满行。浅色值考虑打印明度损失后仍清晰可辨。副本数上限由 `floor((980 − word_width_svg) / (word_width_svg + 40))` 决定，极长单词自动只留首份。
+- **描红行铺满。** 每行首份用纯黑 `#000000`（参考样例，对幼儿园孩子视觉最强、接近真墨水），后续浅蓝 `#b8d9ee` 副本按间距 **80** SVG 单位铺满行。浅色值考虑打印明度损失后仍清晰可辨。副本数上限由 `floor((1210 − word_width_svg) / (word_width_svg + 80))` 决定，极长单词自动只留首份。v1.3.0 把字母层 viewBox 从 1000 扩到 **1250** 并把副本间距从 40 提到 80，目的是让相邻单词首/末字母不再视觉粘连。
 - **单词长度 ≤ 约 20 字符。** 累加字宽必须装进 viewBox `1000`。超过的词，字母会挤出右边界——提醒用户并建议拆分。
 - **清洗描红词。** 去掉标点、拒绝非 ASCII 字母作为描红词本体。释义字段里出现 emoji 和中文没问题，只是被描红的单词不能有。
 - **严格 A4 页面尺寸。** 每一个 `<section class="page">` 打印时必须正好占满一张 A4。`assets/template.html` 里的 CSS 负责保证这点，不要改弱：
@@ -207,7 +207,7 @@ tracing-cards/
 2. 数 `<div class="card">` 出现次数——应等于词数。
 3. 数 `<section class="page">`——应等于 `ceil(词数 / 4)`。
 4. 对输出 grep `height: 297mm`、`@page`、`overflow: hidden`——确认严格 A4 CSS 经过模板替换后仍在位。任何一项缺失，文件都会打出空白尾页或溢出。
-5. **铺满行校验**：任取一张 CARD，数 `<g transform="translate(` 出现次数，应为 `2 × (1 + N)`（2 行描红 × 每行 1 份黑色参考 + N 份浅蓝副本）。同时对输出 grep `#b8d9ee`——单词不是极长时应至少出现一次。同时 grep `stroke="#000000"`——每张卡应至少出现 2 次（2 行描红各一份首参考）。
+5. **铺满行校验**：任取一张 CARD，数 `<g transform="translate(` 出现次数，应为 `2 × (1 + N)`（2 行描红 × 每行 1 份黑色参考 + N 份浅蓝副本；ROW_BLANK 无 `<g transform=`，只有网格线）。同时对输出 grep `#b8d9ee`——单词不是极长时应至少出现一次。同时 grep `stroke="#000000"`——每张卡应至少出现 2 次（2 行描红各一份首参考）。**双 SVG 架构校验**（v1.3.0+）：grep `class="row-grid"` 出现次数应等于 `4 × 词数`（每卡 4 行都有网格），grep `class="row-letters"` 出现次数应等于 `2 × 词数`（只有描红行有字母层）。
 6. **PDF 校验**（仅当 step 7 成功生成 PDF 时）：
    - 文件存在且 > 10 KB。
    - 若系统有 `pdfinfo`（poppler-utils 提供）：页数 = `ceil(词数 / 4)`，页尺寸约等于 A4（595×842 pt 或 210×297 mm，允许 ±1 pt 浮动）。

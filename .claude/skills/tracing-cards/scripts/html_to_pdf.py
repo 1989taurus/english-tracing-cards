@@ -150,12 +150,42 @@ def validate_output(pdf_path: Path) -> None:
         )
 
 
-# 强制 lpstat 走 C locale，避免中文等本地化输出把字串匹配搞歪
+# 优先强制 lpstat 走 C locale；但 macOS Apple CUPS 不总是遵守 LC_ALL=C，
+# 因此下面的解析器同时识别 en/zh 关键词，防御式兜底。
 _C_LOCALE_ENV = {**os.environ, "LC_ALL": "C", "LANG": "C"}
+
+# "no system default" / "无系统默认" 表示 lpstat -d 未配置默认打印机
+_NO_DEFAULT_MARKERS = ("no system default", "无系统默认", "没有系统默认")
+
+# lpstat -d 的默认行前缀（冒号形态英 / 中）
+_DEFAULT_LINE_MARKERS = (
+    "system default destination:",   # en
+    "系统默认目的位置:",              # zh-CN macOS, 半角冒号
+    "系统默认目的位置：",              # zh-CN macOS, 全角冒号
+    "系统默认目的地:",                # 某些 zh 版本
+    "系统默认目的地：",
+)
+
+# lpstat -p 的每行前缀
+_PRINTER_LINE_PREFIXES = ("printer ", "打印机 ", "打印机")
+
+# 被禁用标记
+_DISABLED_MARKERS = ("disabled", "已禁用", "停用")
+
+
+def _strip_line_prefix(line: str, prefixes: tuple[str, ...]) -> str | None:
+    """line 若以 prefixes 里任一开头，返回去掉前缀后的剩余；否则返回 None。"""
+    for p in prefixes:
+        if line.startswith(p):
+            return line[len(p):].lstrip()
+    return None
 
 
 def get_default_printer() -> str | None:
-    """查询 CUPS 默认打印机名；无默认或 lpstat 不可用返回 None。"""
+    """查询 CUPS 默认打印机名；无默认或 lpstat 不可用返回 None。
+
+    兼容 en 与 zh-CN 本地化输出。
+    """
     try:
         result = subprocess.run(
             ["lpstat", "-d"], capture_output=True, text=True, timeout=5,
@@ -163,15 +193,26 @@ def get_default_printer() -> str | None:
         )
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return None
-    # 输出形如：`system default destination: HP_LaserJet` 或 `no system default destination`
+
     for line in result.stdout.splitlines():
-        if "default destination:" in line and "no system default" not in line:
-            return line.split(":", 1)[1].strip() or None
+        low = line.lower()
+        if any(m in low for m in _NO_DEFAULT_MARKERS) or any(m in line for m in _NO_DEFAULT_MARKERS):
+            return None
+        for marker in _DEFAULT_LINE_MARKERS:
+            if marker in line:
+                # 全角冒号/半角冒号都切一次，取右侧
+                tail = line.split(marker, 1)[1]
+                # 可能还残留前导空格或附加标点
+                name = tail.strip().rstrip(".。 ")
+                return name or None
     return None
 
 
 def list_available_printers() -> list[str]:
-    """列出 CUPS 里"accepting"状态的打印机；lpstat 不可用返回空列表。"""
+    """列出 CUPS 里 accepting 状态的打印机；lpstat 不可用返回空列表。
+
+    兼容 en 与 zh-CN 本地化输出（printer X / 打印机 X）。
+    """
     try:
         result = subprocess.run(
             ["lpstat", "-p"], capture_output=True, text=True, timeout=5,
@@ -179,13 +220,20 @@ def list_available_printers() -> list[str]:
         )
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return []
+
     printers: list[str] = []
     for line in result.stdout.splitlines():
-        # 输出形如：`printer HP_LaserJet is idle.  enabled since ...`
-        if line.startswith("printer ") and "disabled" not in line:
-            parts = line.split()
-            if len(parts) >= 2:
-                printers.append(parts[1])
+        tail = _strip_line_prefix(line, _PRINTER_LINE_PREFIXES)
+        if tail is None:
+            continue
+        # 禁用行跳过
+        low = line.lower()
+        if any(m in low for m in _DISABLED_MARKERS) or any(m in line for m in _DISABLED_MARKERS):
+            continue
+        # 取第一个空白前的 token 作为打印机名
+        name = tail.split(None, 1)[0] if tail else ""
+        if name:
+            printers.append(name)
     return printers
 
 

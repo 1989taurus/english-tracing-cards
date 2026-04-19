@@ -41,18 +41,29 @@
 
 <!-- ============================================================ -->
 <!-- SNIPPET: ROW_TRACE                                           -->
-<!-- Four-line grid WITH Hershey solid tracing letters.           -->
-<!-- Variable: {{TRACE_SVG}} (complete SVG with grid + letters)   -->
+<!-- 双 SVG 架构:                                                 -->
+<!--   · row-grid   四线格铺满全宽 (preserveAspectRatio=none)     -->
+<!--   · row-letters 字母保持原比例 (xMinYMid meet, viewBox 1250) -->
+<!-- DOM 顺序：网格在前、字母在后，字母覆盖网格。                   -->
+<!-- Variable: {{LETTER_GROUPS}} 1 份纯黑首份 + N 份浅蓝副本      -->
 <!-- ============================================================ -->
-{{TRACE_SVG}}
+<svg class="row-grid" viewBox="0 0 1000 120" preserveAspectRatio="none">
+  <line x1="0" y1="0"   x2="1000" y2="0"   stroke="#e8505b" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+  <line x1="0" y1="40"  x2="1000" y2="40"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4" vector-effect="non-scaling-stroke"/>
+  <line x1="0" y1="80"  x2="1000" y2="80"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4" vector-effect="non-scaling-stroke"/>
+  <line x1="0" y1="120" x2="1000" y2="120" stroke="#e8505b" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+</svg>
+<svg class="row-letters" viewBox="0 0 1250 120" preserveAspectRatio="xMinYMid meet">
+  {{LETTER_GROUPS}}
+</svg>
 
 <!-- ============================================================ -->
 <!-- SNIPPET: ROW_BLANK                                           -->
-<!-- Four-line grid only. Child writes freely.                    -->
+<!-- 只有网格，没有字母。结构与 ROW_TRACE 的网格层一致。          -->
 <!-- ============================================================ -->
-<svg viewBox="0 0 1000 120" preserveAspectRatio="xMinYMid meet">
-  <line x1="0" y1="0"   x2="1000" y2="0"   stroke="#e8505b" stroke-width="1.4"/>
-  <line x1="0" y1="40"  x2="1000" y2="40"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4"/>
-  <line x1="0" y1="80"  x2="1000" y2="80"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4"/>
-  <line x1="0" y1="120" x2="1000" y2="120" stroke="#e8505b" stroke-width="1.4"/>
+<svg class="row-grid" viewBox="0 0 1000 120" preserveAspectRatio="none">
+  <line x1="0" y1="0"   x2="1000" y2="0"   stroke="#e8505b" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+  <line x1="0" y1="40"  x2="1000" y2="40"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4" vector-effect="non-scaling-stroke"/>
+  <line x1="0" y1="80"  x2="1000" y2="80"  stroke="#f5a0a6" stroke-width="1" stroke-dasharray="5,4" vector-effect="non-scaling-stroke"/>
+  <line x1="0" y1="120" x2="1000" y2="120" stroke="#e8505b" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
 </svg>
