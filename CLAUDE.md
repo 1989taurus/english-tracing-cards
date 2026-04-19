@@ -26,7 +26,7 @@
 
 1. **访谈用户** — 用 `AskUserQuestion` 问四件事：单词列表、主题名称、是否自动补全、输出路径。不要跳过。
 2. 对每个单词：从词库或用户输入里取 emoji/音标/释义（词库没有就问用户，绝不瞎猜），单词转小写，填到 CARD 片段里。
-3. 对 `tracing-cards/`（Hershey）：按 SKILL.md 里的半宽表算出每个字母的 x 偏移，用 `<use>` 元素加缩放 `<g>` transform 组装 SVG。每行描红按公式 `N = floor((1210 − word_width_svg) / (word_width_svg + 80))` 生成 1 份纯黑 `#000000` 参考 + N 份浅蓝 `#b8d9ee` 副本铺满整行。**v1.3.0 架构**：ROW_TRACE 拆为双 SVG —— 网格层 `preserveAspectRatio="none"` viewBox `0 0 1000 120` 铺满容器宽度；字母层 viewBox `0 0 1250 120` `preserveAspectRatio="xMinYMid meet"` 保持字母原比例。`<g>` transform 只发射到字母层的 `{{LETTER_GROUPS}}` 占位符。
+3. 对 `tracing-cards/`（Hershey）：按 SKILL.md 里的半宽表算出每个字母的 x 偏移，用 `<use>` 元素加缩放 `<g>` transform 组装 SVG。每行描红按公式 `N = floor((1210 − word_width_svg) / (word_width_svg + 60))` 生成 1 份纯黑 `#000000` 参考 + N 份浅蓝 `#b8d9ee` 副本，再用动态 `gap = (1210 − (1+N)·W) / N` 把剩余空间均分到 N 个间隔，`Xk = 20 + k · (W + gap)`——**v1.4.0 起始终铺满行**（justify 风格，gap ≥ GAP_MIN = 60）。**v1.3.0 架构**：ROW_TRACE 拆为双 SVG —— 网格层 `preserveAspectRatio="none"` viewBox `0 0 1000 120` 铺满容器宽度；字母层 viewBox `0 0 1250 120` `preserveAspectRatio="xMinYMid meet"` 保持字母原比例。`<g>` transform 只发射到字母层的 `{{LETTER_GROUPS}}` 占位符。
 4. 每 4 张卡片组成一个 PAGE_WRAPPER（`{{THEME}}` 填用户指定的主题名），塞进 `assets/template.html` 的 `{{PAGES}}` 位置。
 5. **验证**：读回前 30 行、数 `<div class="card">` 等于单词数、数 `<section class="page">` 等于 ceil(单词数/4)、把计数报告给用户。
 6. **生成 PDF**（默认开启）：调用 skill 自带 `<skill 根>/scripts/html_to_pdf.py <html 路径>`，在 HTML 同目录产 `.pdf`。双后端（系统 Chrome ≥ 109 优先，Playwright 降级），都没有时软降级并 stderr 报警——**HTML 仍是完整可用产物**。
@@ -40,7 +40,7 @@
 
 **Hershey 渲染**（只针对 `tracing-cards/`）：
 - a–z 的 `<path>` defs 在 `assets/template.html` 里，靠 `<use href="#l-X">` 引用。
-- Transform：`translate(Xk, 17.143) scale(2.857143)`——scale = 40/14，TY = 80 − 2.857×22；`X0=20`（首份纯黑），`Xk = 20 + k * (word_width_svg + 80)`（k ≥ 1 浅蓝副本）。
+- Transform：`translate(Xk, 17.143) scale(2.857143)`——scale = 40/14，TY = 80 − 2.857×22；`X0=20`（首份纯黑），`Xk = 20 + k * (word_width_svg + gap)`（k ≥ 1 浅蓝副本），`gap = (1210 − (1+N)·W) / N` 动态均分（N=0 时只发射首份）。
 - 描边：首份 `stroke="#000000"`、浅蓝副本 `stroke="#b8d9ee"`；其余 `fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"` 共用。
 - 单词长度上限约 20 字符（累加字宽必须装进字母层 viewBox 1250）。
 

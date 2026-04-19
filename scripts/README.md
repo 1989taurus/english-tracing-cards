@@ -41,3 +41,30 @@ echo "exit=$?"
 ### 绕过
 
 确实不需要重打时（例如只改了非分发内容），`touch dist/<name>.skill` 刷新 mtime。
+
+## verify_first_black.py
+
+渲染级回归：确认生成的描红 HTML 里**每行首份单词是黑色、后续副本是浅蓝**。光看源码 inline stroke 和 CSS `!important` 不够，必须让浏览器实际渲染一遍。
+
+### 验证维度
+
+1. `getComputedStyle` — 浏览器最终生效的 stroke 颜色（首份 `rgb(0,0,0)`、余份 `rgb(184,217,238)`）
+2. 像素采样 — 对首份 `<g>` bbox 裁剪，断言裁剪内存在黑色像素（RGB ≤ 20）；第二份同尺寸裁剪作对照，断言无黑色
+
+### 用法
+
+```bash
+python3 scripts/verify_first_black.py                           # 默认跑 tracing-cards-smoke20.html
+python3 scripts/verify_first_black.py tracing-cards-animals.html
+```
+
+### 依赖
+
+```bash
+pip install --user playwright pillow
+python3 -m playwright install chromium
+```
+
+### 定位
+
+**开发期回归工具，不随 skill 分发**。prompt 级回归走 `.claude/skills/tracing-cards/evals/`，像素级渲染验证留在仓库根 `scripts/`。

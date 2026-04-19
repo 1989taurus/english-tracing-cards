@@ -5,6 +5,31 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.4.0] — 2026-04-19
+
+### 新增
+
+- **描红副本动态 gap 铺满（justify 风格）。** v1.3.x 用固定 80 SVG 单位间距，导致行尾总有一段参差不齐的留白（短词更明显）。v1.4.0 改为"先按最小间距算副本数、再把剩余空间均分"的 justify-content 算法：
+  - 常量 `GAP_MIN = 60` SVG 单位（≈ 10mm 打印宽度，低于此值相邻首/末字母会视觉粘连）。
+  - `N = floor((1210 − W) / (W + 60))` — 按最小间距算副本数。
+  - `gap = (1210 − (1+N)·W) / N` — 把剩余空间均分到 N 个间隔，保证每行右边缘贴近 viewBox 边界。
+  - `Xk = 20 + k · (W + gap)` — 第 k 份副本的 x 偏移。
+- 好处：每行**始终铺满**，没有不统一的尾部留白；gap 按可用空间自适应（短词间距宽、长词间距窄），视觉上像 CSS `justify-content: space-between`。
+- 代表性单词验证：cat (W=149) → 5 份副本、gap=63.7；apple (W=234) → 3 份副本、gap=91.3；banana (W=337) → 2 份副本、gap=99.5；flower (W=269) → 2 份副本、gap=201.5。
+
+### 变更
+
+- SKILL.md 生成步骤 3c/3d 重写：引入 `GAP_MIN=60` 常量，N 公式分母从 `+80` 改为 `+60`，3d 新增动态 gap 计算，`Xk = 20 + k · (W + gap)` 取代 `20 + k · (W + 80)`。
+- SKILL.md 规则"描红行铺满"改写为动态 gap 叙述，明确"v1.4.0 起始终铺满、右边缘贴近视觉边界"。
+- SKILL.md 验证步骤 5 新增 gap 下限检查（任取一份副本，`Xk − X(k-1) ≥ W + 60`）。
+- CLAUDE.md 生成流水线 step 3 + "Hershey 渲染" 硬约束同步新公式。
+- `references/example.html` 按 v1.4.0 算法重生成（cat/dog/pig/duck）。
+
+### 兼容性
+
+- **纯渲染层变更，不影响数据契约**。HTML 产物仍是自包含离线文件、四线三格坐标不变、双 SVG 架构不变、CSS 结构性兜底（v1.3.1）不变。
+- 已有 `tracing-cards-*.html` 产物不会被自动重算；要应用新铺满算法需重新跑 skill。
+
 ## [1.3.1] — 2026-04-19
 
 ### 新增
