@@ -3,7 +3,7 @@ name: tracing-cards
 description: Generate printable A4 English word tracing practice worksheets for kindergarten-age children (3-6 years old). Produces a self-contained, fully offline HTML file featuring 四线三格 (four-line three-space) handwriting grid, Hershey Futural solid single-stroke SVG tracing letters, emoji illustrations, IPA phonetics, and Chinese meanings. Use this skill whenever a user mentions 英语描红, 描红卡, 描红练习, 单词描红, 英文练字帖, tracing worksheet, tracing cards, handwriting practice, kindergarten English, preschool English writing, printable word practice for kids, or asks a parent/teacher-style request to create printable letter/word practice sheets for young children — even when they don't literally say 描红卡 or tracing. Also trigger for requests like 给孩子做一份英文单词练习打印, 幼儿园英语字帖, preschool handwriting sheet.
 license: MIT
 metadata:
-  version: 1.1.1
+  version: 1.2.0
   authors:
     - 1989taurus
 ---
@@ -149,13 +149,13 @@ tracing-cards/
    **d. 发射 SVG**
    - 先画 y=0/40/80/120 的网格线。
    - 再发射 1 + N 个 `<g>`，第 k 个（k=0..N）的 transform 为 `translate(Xk, 17.143) scale(2.857143)`：
-     - `X0 = 20`（首份深蓝）
+     - `X0 = 20`（首份纯黑）
      - `Xk = 20 + k * (word_width_svg + 40)`（k ≥ 1 浅蓝副本）
-   - 首份（k=0）`<g>` 属性：`fill="none" stroke="#5a9ed0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"`。
+   - 首份（k=0）`<g>` 属性：`fill="none" stroke="#000000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"`。
    - 浅色副本（k≥1）`<g>` 仅把 `stroke` 改成 `#b8d9ee`，其余属性一致。
    - 每个 `<g>` 里复用同一套字母 offset：`<use href="#l-LETTER" x="OFFSET"/>`。
 
-   **教学意图**：首份深蓝 `#5a9ed0` 是参考样例（给孩子看"长什么样"），浅蓝 `#b8d9ee` 副本是描红练习本体（孩子沿浅色笔画走笔）。行尾留白不是 bug —— N 公式按整数份计算，无法刚好填满到像素级。
+   **教学意图**：首份纯黑 `#000000` 是参考样例（给孩子看"长什么样"），浅蓝 `#b8d9ee` 副本是描红练习本体（孩子沿浅色笔画走笔）。行尾留白不是 bug —— N 公式按整数份计算，无法刚好填满到像素级。
 
 4. 把卡片按 4 张一页分组。每一页把 `{{PAGE_NUM}}`、`{{PAGE_TOTAL}}`、`{{THEME}}`（用户给的主题名）、`{{CARDS}}` 填进 PAGE_WRAPPER。
 
@@ -163,9 +163,10 @@ tracing-cards/
 
 6. 把最终 HTML 写到用户指定的输出路径。
 
-7. **生成 PDF**（默认开启，不额外问用户）：
+7. **生成 PDF + 自动打印**（默认开启，不额外问用户）：
    - 调用 skill 自带脚本 `<skill 根>/scripts/html_to_pdf.py <html 输出路径>`，在 HTML 相同目录下产出 `tracing-cards-<slug>.pdf`。脚本随 `.skill` 打包分发，不依赖仓库根。
    - 脚本内部已实现双后端探测（系统 Chrome ≥109 优先，Playwright 降级）、独立 user-data-dir、A4/彩色背景保留、产物尺寸校验。
+   - **PDF 生成成功后，脚本默认把 PDF 送系统默认打印机队列**（CUPS `lp`，Linux/macOS）。无 `lp`、无可用打印机、`lp` 返回非 0 —— 都只在 stderr 软降级提醒，不影响脚本退出码。禁用方式：`--no-print` 标志，或环境变量 `TRACING_CARDS_AUTO_PRINT=0`。指定非默认打印机：`TRACING_CARDS_PRINTER=<name>`。
    - **软降级**：若脚本退出码非 0（例如两个后端都缺），不要中止整个 skill。继续完成 step 8 的总结，并在总结里明确说明"PDF 未生成：<原因>"以及给出的安装指令（Chrome 或 `pip install playwright`）。HTML 本身仍然是完整可用的产物。
    - Linux 环境脚本会探测彩色 emoji 字体（`fc-list | grep -i 'color emoji'`）；缺失时仍会出 PDF，但颜色退化为黑白 —— 脚本 stderr 会发 WARNING，把这条警告原样传进最终总结。
 
@@ -187,7 +188,7 @@ tracing-cards/
 - **输出完全离线自包含。** 所有资源必须内联（SVG + emoji + 系统字体）。不用 Google Fonts、不用外部 CSS、不用网络资源。原因：练习卡经常要在没网的设备上打印，外部字体拉不下来就毁了整张纸。
 - **保留四线格坐标**（viewBox `0 0 1000 120` 中 y = 0 / 40 / 80 / 120）。这四条线定义了四线三格的书写区，挪动就把教学用意毁了。
 - **Hershey 单笔画渲染。** 所有字母通过 `<use href="#l-X">` 引用 `template.html` 里的 defs，实线蓝色描边（实线非虚线）。只描边、不填充。
-- **描红行铺满。** 每行首份用深蓝 `#5a9ed0`（参考样例），后续浅蓝 `#b8d9ee` 副本按间距 40 SVG 单位铺满行。浅色值考虑打印明度损失后仍清晰可辨。副本数上限由 `floor((980 − word_width_svg) / (word_width_svg + 40))` 决定，极长单词自动只留首份。
+- **描红行铺满。** 每行首份用纯黑 `#000000`（参考样例，对幼儿园孩子视觉最强、接近真墨水），后续浅蓝 `#b8d9ee` 副本按间距 40 SVG 单位铺满行。浅色值考虑打印明度损失后仍清晰可辨。副本数上限由 `floor((980 − word_width_svg) / (word_width_svg + 40))` 决定，极长单词自动只留首份。
 - **单词长度 ≤ 约 20 字符。** 累加字宽必须装进 viewBox `1000`。超过的词，字母会挤出右边界——提醒用户并建议拆分。
 - **清洗描红词。** 去掉标点、拒绝非 ASCII 字母作为描红词本体。释义字段里出现 emoji 和中文没问题，只是被描红的单词不能有。
 - **严格 A4 页面尺寸。** 每一个 `<section class="page">` 打印时必须正好占满一张 A4。`assets/template.html` 里的 CSS 负责保证这点，不要改弱：
@@ -206,7 +207,7 @@ tracing-cards/
 2. 数 `<div class="card">` 出现次数——应等于词数。
 3. 数 `<section class="page">`——应等于 `ceil(词数 / 4)`。
 4. 对输出 grep `height: 297mm`、`@page`、`overflow: hidden`——确认严格 A4 CSS 经过模板替换后仍在位。任何一项缺失，文件都会打出空白尾页或溢出。
-5. **铺满行校验**：任取一张 CARD，数 `<g transform="translate(` 出现次数，应为 `2 × (1 + N)`（2 行描红 × 每行 1 份深色 + N 份浅色）。同时对输出 grep `#b8d9ee`——单词不是极长时应至少出现一次。
+5. **铺满行校验**：任取一张 CARD，数 `<g transform="translate(` 出现次数，应为 `2 × (1 + N)`（2 行描红 × 每行 1 份黑色参考 + N 份浅蓝副本）。同时对输出 grep `#b8d9ee`——单词不是极长时应至少出现一次。同时 grep `stroke="#000000"`——每张卡应至少出现 2 次（2 行描红各一份首参考）。
 6. **PDF 校验**（仅当 step 7 成功生成 PDF 时）：
    - 文件存在且 > 10 KB。
    - 若系统有 `pdfinfo`（poppler-utils 提供）：页数 = `ceil(词数 / 4)`，页尺寸约等于 A4（595×842 pt 或 210×297 mm，允许 ±1 pt 浮动）。

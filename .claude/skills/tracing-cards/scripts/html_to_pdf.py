@@ -6,6 +6,11 @@
   2. 降级：Playwright（pip install playwright + playwright install chromium）
   3. 都没有：退出码 1，打印平台相关安装提示
 
+PDF 生成成功后，默认把 PDF 送系统打印队列（CUPS `lp`）。
+  - 无 `lp` / 无可用打印机 → stderr 软降级通知，不影响退出码。
+  - `TRACING_CARDS_AUTO_PRINT=0` 或 `--no-print` 禁用自动打印。
+  - `TRACING_CARDS_PRINTER=<name>` 指定打印机（否则用系统默认）。
+
 退出码：
   0  成功
   1  没有可用后端
@@ -145,6 +150,86 @@ def validate_output(pdf_path: Path) -> None:
         )
 
 
+# 强制 lpstat 走 C locale，避免中文等本地化输出把字串匹配搞歪
+_C_LOCALE_ENV = {**os.environ, "LC_ALL": "C", "LANG": "C"}
+
+
+def get_default_printer() -> str | None:
+    """查询 CUPS 默认打印机名；无默认或 lpstat 不可用返回 None。"""
+    try:
+        result = subprocess.run(
+            ["lpstat", "-d"], capture_output=True, text=True, timeout=5,
+            env=_C_LOCALE_ENV,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None
+    # 输出形如：`system default destination: HP_LaserJet` 或 `no system default destination`
+    for line in result.stdout.splitlines():
+        if "default destination:" in line and "no system default" not in line:
+            return line.split(":", 1)[1].strip() or None
+    return None
+
+
+def list_available_printers() -> list[str]:
+    """列出 CUPS 里"accepting"状态的打印机；lpstat 不可用返回空列表。"""
+    try:
+        result = subprocess.run(
+            ["lpstat", "-p"], capture_output=True, text=True, timeout=5,
+            env=_C_LOCALE_ENV,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return []
+    printers: list[str] = []
+    for line in result.stdout.splitlines():
+        # 输出形如：`printer HP_LaserJet is idle.  enabled since ...`
+        if line.startswith("printer ") and "disabled" not in line:
+            parts = line.split()
+            if len(parts) >= 2:
+                printers.append(parts[1])
+    return printers
+
+
+def auto_print_pdf(pdf_path: Path, disabled: bool = False) -> None:
+    """PDF 成功后送系统打印队列。任何失败仅 stderr 通知，不抛异常。
+
+    跳过条件（按优先级）：
+      1. disabled=True（来自 --no-print）
+      2. TRACING_CARDS_AUTO_PRINT=0
+      3. 系统没有 lp 命令
+      4. 没有可用打印机
+    """
+    if disabled or os.environ.get("TRACING_CARDS_AUTO_PRINT") == "0":
+        print("[info] 自动打印已禁用（--no-print 或 TRACING_CARDS_AUTO_PRINT=0）", file=sys.stderr)
+        return
+
+    lp = shutil.which("lp")
+    if lp is None:
+        print("[info] 未找到 CUPS `lp` 命令，跳过自动打印。PDF 已生成可手动打印。", file=sys.stderr)
+        return
+
+    printer = os.environ.get("TRACING_CARDS_PRINTER") or get_default_printer()
+    if printer is None:
+        available = list_available_printers()
+        if not available:
+            print("[info] 无可用打印机，跳过自动打印。PDF 已生成可手动打印。", file=sys.stderr)
+            return
+        printer = available[0]
+
+    cmd = [lp, "-d", printer, str(pdf_path)]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    except subprocess.TimeoutExpired:
+        print(f"[warn] lp 超时（15s），打印请求未确认。打印机：{printer}", file=sys.stderr)
+        return
+
+    if result.returncode == 0:
+        job_id = (result.stdout or "").strip() or f"(printer={printer})"
+        print(f"[ok] 已送打印机队列：{job_id}", file=sys.stderr)
+    else:
+        tail = (result.stderr or result.stdout or "")[-400:]
+        print(f"[warn] lp 返回码 {result.returncode}，打印可能失败：\n{tail}", file=sys.stderr)
+
+
 def print_install_hints() -> None:
     """两个后端都缺时的安装提示，打到 stderr。"""
     print("ERROR: no PDF backend available.", file=sys.stderr)
@@ -181,6 +266,10 @@ def main() -> int:
         "--browser", type=str, default=None,
         help="Override path to Chrome/Chromium binary",
     )
+    parser.add_argument(
+        "--no-print", action="store_true",
+        help="Skip auto-printing to system default printer after PDF is generated",
+    )
     args = parser.parse_args()
 
     if not args.input.exists():
@@ -211,6 +300,7 @@ def main() -> int:
             render_with_chrome(chrome, args.input, out)
             validate_output(out)
             print(f"wrote {out} ({out.stat().st_size // 1024} KB)", file=sys.stderr)
+            auto_print_pdf(out, disabled=args.no_print)
             return 0
         except Exception as e:
             print(f"Chrome backend failed: {e}", file=sys.stderr)
@@ -222,6 +312,7 @@ def main() -> int:
         render_with_playwright(args.input, out)
         validate_output(out)
         print(f"wrote {out} ({out.stat().st_size // 1024} KB)", file=sys.stderr)
+        auto_print_pdf(out, disabled=args.no_print)
         return 0
     except ImportError:
         if chrome is None:

@@ -6,11 +6,12 @@
 
 - 每页 4 张卡片，严格 `height: 297mm`，正好打印到一张 A4 纸
 - 每张卡片：emoji + 单词 + 音标 + 中文释义
-- 2 行描红，**每行首份深蓝参考 + 若干浅蓝副本铺满整行**（小朋友按浅色笔画描红）
+- 2 行描红，**每行首份纯黑 `#000000` 参考 + 若干浅蓝 `#b8d9ee` 副本铺满整行**（小朋友按浅色笔画描红）
 - 2 行空白练习，印在 四线三格 格子上
 - Hershey Futural 单笔画 SVG 字母，实线描红、非虚线
 - 内置约 50 个幼儿园常用词（动物、水果、颜色、数字、家庭等）
 - **同时生成 HTML 和 A4 PDF**（基于系统 Chrome 或 Playwright 任一）
+- **PDF 生成后自动送默认打印机**（Linux/macOS CUPS `lp`，无打印机自动跳过，不中断）
 
 ![layout](https://img.shields.io/badge/layout-A4%20297mm-blue) ![skill](https://img.shields.io/badge/claude--code-skill-7c3aed) ![license](https://img.shields.io/badge/license-MIT-green)
 
@@ -65,6 +66,14 @@ python3 ~/.claude/skills/tracing-cards/scripts/html_to_pdf.py tracing-cards-anim
 
 1. 系统 Chrome / Chromium ≥ 109（推荐，零依赖）
 2. Playwright（`pip install playwright && python -m playwright install chromium`，免 sudo，适合沙箱环境）
+
+**自动打印**（v1.2.0+）：PDF 落盘后，脚本默认把 PDF 送 CUPS `lp` 打印队列（系统默认打印机，若无则取第一台 idle 打印机）。无 `lp`、无打印机、`lp` 失败均软降级，只发 stderr 通知。禁用方式：
+
+```bash
+python3 html_to_pdf.py input.html --no-print          # CLI 标志
+TRACING_CARDS_AUTO_PRINT=0 python3 html_to_pdf.py ... # 环境变量
+TRACING_CARDS_PRINTER=OtherName python3 html_to_pdf.py ...  # 指定打印机
+```
 
 **前置**：Python 3.8+。Linux 用户如需彩色 emoji，额外安装 `fonts-noto-color-emoji`（否则 emoji 退化为黑白轮廓，PDF 仍可用）。
 

@@ -5,6 +5,26 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.2.0] — 2026-04-19
+
+### 新增
+
+- **首份参考改为纯黑 `#000000`。** 原先首份描红参考是深蓝 `#5a9ed0`，对幼儿园孩子的视觉对比不够强。改成纯黑——接近真墨水、打印最稳、描红对照最清晰。浅蓝 `#b8d9ee` 副本保持不变，仍是孩子沿笔画描红的主体。`references/example.html` 同步重生成。
+- **PDF 生成成功后自动送默认打印机**（Linux/macOS，CUPS `lp`）。`html_to_pdf.py` 在 PDF 落盘后探测 `lp`、查 `lpstat -d` 找默认打印机（或 `lpstat -p` 取第一台 idle 打印机），然后 `lp -d <name> <pdf>`。打印请求提交后 stderr 报 job id；超时/返回码非 0 / 无 `lp` / 无打印机——全部软降级，只发通知不抛异常。
+- 新增 CLI 标志 `--no-print` 和环境变量 `TRACING_CARDS_AUTO_PRINT=0` 用于禁用自动打印；`TRACING_CARDS_PRINTER=<name>` 用于指定非默认打印机。
+
+### 修复
+
+- **lpstat 本地化输出解析兼容 `LC_ALL=C`。** 在中文 locale 下 `lpstat -p` 会输出"打印机 XXX 目前空闲"而不是 "printer XXX is idle"，导致打印机检测失败。`get_default_printer()` 和 `list_available_printers()` 现在显式传 `env={**os.environ, "LC_ALL": "C", "LANG": "C"}` 给 subprocess，强制英文输出。影响：中文 Linux Mint / Ubuntu 上自动打印路径在本版本前静默失败。
+
+### 变更
+
+- SKILL.md 规则 "描红行铺满" 首份颜色描述：深蓝 → 纯黑。
+- SKILL.md 生成步骤 3 `X0` 注释：深色 → 纯黑。
+- SKILL.md 步骤 7 标题 "生成 PDF" → "生成 PDF + 自动打印"，新增打印行为、软降级条件、禁用/指定打印机的方法。
+- SKILL.md 验证步骤 5 新增 `grep stroke="#000000"` 校验（每卡至少 2 次）。
+- CLAUDE.md 生成流水线 step 3 首份颜色同步为 `#000000` 纯黑。
+
 ## [1.1.1] — 2026-04-19
 
 ### 修复
