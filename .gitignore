@@ -1,5 +1,6 @@
 # Generated worksheet output (regenerate via the tracing-cards skill)
 /tracing-cards-*.html
+/tracing-cards-*.pdf
 
 # IDE
 .idea/

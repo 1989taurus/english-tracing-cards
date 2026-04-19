@@ -130,11 +130,32 @@ tracing-cards/
    - 把每个 `{{ROW_TRACE}}` 标记替换成完整 SVG（见第 3 步）。
    - 把每个 `{{ROW_BLANK}}` 标记按 ROW_BLANK 片段原样替换（只有网格，没有字母）。
 
-3. 通过排列 Hershey 字母来构建每一行 `{{ROW_TRACE}}` SVG：
-   - 从下面的半宽表里查出每个字母的半宽 `o`。
+3. 构建每一行 `{{ROW_TRACE}}` SVG —— 首份深蓝 + 若干浅蓝副本**铺满行**：
+
+   **a. 计算每个字母的 x 偏移（单词内部相对位置）**
+   - 从下面的半宽表查出每个字母的半宽 `o`。
    - 累加 x 偏移：`x[0] = 0`，`x[n] = sum(2 * o[i] for i in 0..n-1)`。
    - **不要**在每个 x 偏移上再加 20——左侧 padding 已经在 group 的 `translate(20, ...)` transform 里处理了。再加一次会把字母推到 viewBox 右边界之外。
-   - 发射 SVG：先画 y=0/40/80/120 的网格线，然后是一个 `<g transform="translate(20,17.143) scale(2.857143)" fill="none" stroke="#5a9ed0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke">`，里面每个字母用一个 `<use href="#l-LETTER" x="OFFSET"/>`。
+
+   **b. 计算单词总宽**（SVG 单位）
+   - `word_width_hershey = sum(2 * o[i] for i in 0..len-1)`（所有字母 advance 之和）。
+   - `word_width_svg = word_width_hershey * 2.857143`。
+
+   **c. 计算浅色副本数 N**
+   - `N = floor((980 - word_width_svg) / (word_width_svg + 40))`
+   - 常量：左右余量合计 20（对应首份 `translate(20, ...)`），副本与副本之间间距固定 40 SVG 单位。
+   - 单词过长（`word_width_svg > 940`）时 N = 0，只保留首份深色——静默回退，不报错。
+
+   **d. 发射 SVG**
+   - 先画 y=0/40/80/120 的网格线。
+   - 再发射 1 + N 个 `<g>`，第 k 个（k=0..N）的 transform 为 `translate(Xk, 17.143) scale(2.857143)`：
+     - `X0 = 20`（首份深蓝）
+     - `Xk = 20 + k * (word_width_svg + 40)`（k ≥ 1 浅蓝副本）
+   - 首份（k=0）`<g>` 属性：`fill="none" stroke="#5a9ed0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"`。
+   - 浅色副本（k≥1）`<g>` 仅把 `stroke` 改成 `#b8d9ee`，其余属性一致。
+   - 每个 `<g>` 里复用同一套字母 offset：`<use href="#l-LETTER" x="OFFSET"/>`。
+
+   **教学意图**：首份深蓝 `#5a9ed0` 是参考样例（给孩子看"长什么样"），浅蓝 `#b8d9ee` 副本是描红练习本体（孩子沿浅色笔画走笔）。行尾留白不是 bug —— N 公式按整数份计算，无法刚好填满到像素级。
 
 4. 把卡片按 4 张一页分组。每一页把 `{{PAGE_NUM}}`、`{{PAGE_TOTAL}}`、`{{THEME}}`（用户给的主题名）、`{{CARDS}}` 填进 PAGE_WRAPPER。
 
@@ -142,7 +163,13 @@ tracing-cards/
 
 6. 把最终 HTML 写到用户指定的输出路径。
 
-7. 打印一条简短总结：输出路径、词数、页数，以及使用提示：**"在浏览器打开 → Ctrl/Cmd+P → 选 A4 → 打印"**。
+7. **生成 PDF**（默认开启，不额外问用户）：
+   - 调用仓库脚本 `scripts/html_to_pdf.py <html 输出路径>`，在相同目录下产出 `tracing-cards-<slug>.pdf`。
+   - 脚本内部已实现双后端探测（系统 Chrome ≥109 优先，Playwright 降级）、独立 user-data-dir、A4/彩色背景保留、产物尺寸校验。
+   - **软降级**：若脚本退出码非 0（例如两个后端都缺），不要中止整个 skill。继续完成 step 8 的总结，并在总结里明确说明"PDF 未生成：<原因>"以及给出的安装指令（Chrome 或 `pip install playwright`）。HTML 本身仍然是完整可用的产物。
+   - Linux 环境脚本会探测彩色 emoji 字体（`fc-list | grep -i 'color emoji'`）；缺失时仍会出 PDF，但颜色退化为黑白 —— 脚本 stderr 会发 WARNING，把这条警告原样传进最终总结。
+
+8. 打印一条简短总结：HTML 路径、PDF 路径（若已生成）、词数、页数、PDF 字节数、emoji 字体警告（若有），以及使用提示：**"在浏览器打开 HTML → Ctrl/Cmd+P → 选 A4 → 打印"**（备用路径，防 PDF 未生成时用户仍有出路）。
 
 ## Hershey Futural 字母半宽表
 
@@ -160,6 +187,7 @@ tracing-cards/
 - **输出完全离线自包含。** 所有资源必须内联（SVG + emoji + 系统字体）。不用 Google Fonts、不用外部 CSS、不用网络资源。原因：练习卡经常要在没网的设备上打印，外部字体拉不下来就毁了整张纸。
 - **保留四线格坐标**（viewBox `0 0 1000 120` 中 y = 0 / 40 / 80 / 120）。这四条线定义了四线三格的书写区，挪动就把教学用意毁了。
 - **Hershey 单笔画渲染。** 所有字母通过 `<use href="#l-X">` 引用 `template.html` 里的 defs，实线蓝色描边（实线非虚线）。只描边、不填充。
+- **描红行铺满。** 每行首份用深蓝 `#5a9ed0`（参考样例），后续浅蓝 `#b8d9ee` 副本按间距 40 SVG 单位铺满行。浅色值考虑打印明度损失后仍清晰可辨。副本数上限由 `floor((980 − word_width_svg) / (word_width_svg + 40))` 决定，极长单词自动只留首份。
 - **单词长度 ≤ 约 20 字符。** 累加字宽必须装进 viewBox `1000`。超过的词，字母会挤出右边界——提醒用户并建议拆分。
 - **清洗描红词。** 去掉标点、拒绝非 ASCII 字母作为描红词本体。释义字段里出现 emoji 和中文没问题，只是被描红的单词不能有。
 - **严格 A4 页面尺寸。** 每一个 `<section class="page">` 打印时必须正好占满一张 A4。`assets/template.html` 里的 CSS 负责保证这点，不要改弱：
@@ -178,6 +206,11 @@ tracing-cards/
 2. 数 `<div class="card">` 出现次数——应等于词数。
 3. 数 `<section class="page">`——应等于 `ceil(词数 / 4)`。
 4. 对输出 grep `height: 297mm`、`@page`、`overflow: hidden`——确认严格 A4 CSS 经过模板替换后仍在位。任何一项缺失，文件都会打出空白尾页或溢出。
+5. **铺满行校验**：任取一张 CARD，数 `<g transform="translate(` 出现次数，应为 `2 × (1 + N)`（2 行描红 × 每行 1 份深色 + N 份浅色）。同时对输出 grep `#b8d9ee`——单词不是极长时应至少出现一次。
+6. **PDF 校验**（仅当 step 7 成功生成 PDF 时）：
+   - 文件存在且 > 10 KB。
+   - 若系统有 `pdfinfo`（poppler-utils 提供）：页数 = `ceil(词数 / 4)`，页尺寸约等于 A4（595×842 pt 或 210×297 mm，允许 ±1 pt 浮动）。
+   - 无 `pdfinfo` 时跳过尺寸检查，只保留文件尺寸断言。
 
 **不要**自动在浏览器里打开文件。用户可能在无头系统上，起一个 GUI 程序要么响亮失败、要么静悄悄生出僵尸进程。
 
